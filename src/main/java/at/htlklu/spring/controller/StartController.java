@@ -18,13 +18,17 @@ public class StartController
     private static final String CLASS_NAME = "StartController";
 
 
+    //http://localhost:8082/start/test
+
     @GetMapping("test")
 	@ResponseBody
 	public String test()
 	{
-		logger.info(LogUtils.info(CLASS_NAME, "show"));
+		logger.info(LogUtils.info(CLASS_NAME, "test"));
 	    return "test";
 	}
+
+    //http://localhost:8082/departments/1/schoolClasses
 
 //    localhost:8082/start/add/3/5  // Url ca. = Path
     @GetMapping("add/{number1}/{number2}")
@@ -46,6 +50,13 @@ public class StartController
         return number1 + number2;
     }
 
+    @GetMapping("sub/{number1}/{number2}")
+    @ResponseBody
+    public int subPV(@PathVariable int number1,
+                     @PathVariable int number2) {
+        logger.info(LogUtils.info(CLASS_NAME, String.format("subPV/%d/%d", number1, number2)));
+        return number1 - number2;
+    }
 
     @GetMapping(value = "getTeacher")
 	@ResponseBody

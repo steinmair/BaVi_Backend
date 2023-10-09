@@ -43,6 +43,8 @@ public class Event extends RepresentationModel<SchoolClass> implements Serializa
     private LocalDate dateTo;
     private String destination;
     private String description;
+
+
     //endregion
 
 
