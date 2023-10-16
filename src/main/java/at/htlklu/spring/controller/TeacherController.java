@@ -15,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 //localhost:8082/mvc/teachers
 //localhost:8082/mvc/teachers/1/departments
@@ -55,7 +56,7 @@ public class TeacherController
 	@GetMapping("{teacherId}/departments")
 	public ModelAndView showDepartments(@PathVariable int  teacherId){
 
-		logger.info(LogUtils.info(TeacherController.class.getSimpleName(), "showDepartments",String.format("%d",teacherId)));
+		logger.info(LogUtils.info(DepartmentController.class.getSimpleName(), "showDepartments",String.format("%d",teacherId)));
 
 		ModelAndView mv = new ModelAndView();
 		mv.setViewName(DepartmentController.FORM_NAME_LIST);
@@ -65,10 +66,43 @@ public class TeacherController
 		if(optTeacher.isPresent())
 		{ //Teacher wurde gefunden, weil id in Teachertabelle vorhanden
 			Teacher teacher = optTeacher.get();
+			List<Department> departments = teacher.getDepartments()
+					.stream()
+					.sorted(Department.BY_NAME)
+					.collect(Collectors.toList());
 
-			Set<Department> departments = teacher.getDepartments();
-
+			mv.addObject("teacher",teacher);
 			mv.addObject("departments",departments);
+
+		}else {
+
+		}
+
+		//to do
+
+		return mv;
+	}
+		@GetMapping("{teacherId}/schoolClasses")
+	public ModelAndView showSchoolClasses(@PathVariable int  teacherId){
+
+		logger.info(LogUtils.info(SchoolClassController.class.getSimpleName(), "showSchoolClasses",String.format("%d",teacherId)));
+
+		ModelAndView mv = new ModelAndView();
+		mv.setViewName(SchoolClassController.FORM_NAME_LIST);
+
+		Optional<Teacher> optTeacher = teacherRepository.findById(teacherId);
+
+		if(optTeacher.isPresent())
+		{ //Teacher wurde gefunden, weil id in Teachertabelle vorhanden
+			Teacher teacher = optTeacher.get();
+			List<SchoolClass> schoolClasses = teacher.getSchoolClasses()
+					.stream()
+					.sorted(SchoolClass.BY_NAME)
+					.collect(Collectors.toList());
+
+			mv.addObject("teacher",teacher);
+			mv.addObject("schoolClasses",schoolClasses);
+
 		}else {
 
 		}

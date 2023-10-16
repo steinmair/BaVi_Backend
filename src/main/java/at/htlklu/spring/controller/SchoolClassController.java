@@ -2,10 +2,10 @@ package at.htlklu.spring.controller;
 
 import at.htlklu.spring.api.LogUtils;
 import at.htlklu.spring.model.Department;
-import at.htlklu.spring.model.Subject;
 import at.htlklu.spring.model.Teacher;
-import at.htlklu.spring.model.StudentSubject;
-import at.htlklu.spring.repository.SubjectRepository;
+import at.htlklu.spring.model.SchoolClass;
+import at.htlklu.spring.repository.SchoolClassesRepository;
+import at.htlklu.spring.repository.TeacherRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,17 +25,17 @@ import java.util.stream.Collectors;
 
 
 @Controller
-@RequestMapping(value ="mvc/subjects")
-public class SubjectController
+@RequestMapping(value ="mvc/schoolClasses")
+public class SchoolClassController
 {
 	//region Properties
-	private static Logger logger = LogManager.getLogger(SubjectController.class);
-	private static final String CLASS_NAME = "SubjectController";
+	private static Logger logger = LogManager.getLogger(SchoolClassController.class);
+	private static final String CLASS_NAME = "SchoolClassController";
 	public static final String FORM_NAME_SINGLE = "TeacherSingle";
-	public static final String FORM_NAME_LIST = "SubjectList";
+	public static final String FORM_NAME_LIST = "SchoolClassList";
 
 	@Autowired
-	SubjectRepository subjectRepository;
+	SchoolClassesRepository schoolClassesRepository;
 	//endregion
 
 
@@ -47,11 +47,12 @@ public class SubjectController
 
 		ModelAndView mv = new ModelAndView();
 
-		mv.setViewName(SubjectController.FORM_NAME_LIST);
+		mv.setViewName(SchoolClassController.FORM_NAME_LIST);
 
-		List<Subject> subjects = subjectRepository.findAll();
-		mv.addObject("subjects", subjects); //link zur HTML
+		List<SchoolClass> schoolClasses = schoolClassesRepository.findAll();
+		mv.addObject("schoolClass", schoolClasses); //link zur HTML
 
 	    return mv;
-	}}
+	}
 
+}

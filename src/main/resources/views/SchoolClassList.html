@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
     <head>
-        <title th:text="#{teacher.caption.plural}"/>
+        <title th:text="#{schoolClass.caption.plural}"/>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css" />
@@ -9,7 +9,7 @@
     </head>
     <body>    
     	<div class="container">
-	    	<h2 th:text="#{teacher.caption.plural}"></h2>
+	    	<h2 th:text="#{schoolClass.caption.plural}"></h2>
 
 	        <table class="table table-striped table-responsive-md">
 	            <tr>
@@ -19,7 +19,6 @@
 					<th th:text="#{teacher.firstname}"></th>
 					<th th:text="#{teacher.email}"></th>
 					<th th:text="#{teacher.phone}"></th>
-					<th th:text="#{page.actions}"></th>
 					<th th:text="#{page.actions}"></th>
 	            </tr>
 	            <tr th:each="teacher:${teachers}">
@@ -32,11 +31,6 @@
 					<td>
 						<a th:href="@{/mvc/teachers/{teacherId}/departments(teacherId=${teacher.teacherId})}"
 						th:text="#{page.show(#{department.caption.plural})}">
-						</a>
-					</td>
-					<td>
-						<a th:href="@{/mvc/teachers/{teacherId}/schoolClasses(teacherId=${teacher.teacherId})}"
-						th:text="#{page.show(#{schoolClass.caption.plural})}">
 						</a>
 					</td>
 	            </tr>
