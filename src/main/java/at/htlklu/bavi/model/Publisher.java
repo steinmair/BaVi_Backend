@@ -1,12 +1,15 @@
 package at.htlklu.bavi.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "Publisher")
@@ -27,6 +30,13 @@ public class Publisher extends RepresentationModel<Publisher> implements Seriali
 
     @NotBlank
     private String name;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "publisher",
+            cascade = CascadeType.MERGE,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private Set<Song> songs = new HashSet<Song>();
 
     //endregion
 
@@ -63,6 +73,13 @@ public class Publisher extends RepresentationModel<Publisher> implements Seriali
         this.name = name;
     }
 
+    public Set<Song> getSongs() {
+        return songs;
+    }
+
+    public void setSongs(Set<Song> songs) {
+        this.songs = songs;
+    }
 
     //endregion
 

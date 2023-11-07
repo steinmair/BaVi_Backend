@@ -60,33 +60,6 @@ public class Song extends RepresentationModel<Song> implements Serializable
     private Member member;
 
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "song",
-            cascade = CascadeType.MERGE,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    private Set<Publisher> publishers = new HashSet<Publisher>();
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "song",
-            cascade = CascadeType.MERGE,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    private Set<Genre> genres = new HashSet<Genre>();
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "song",
-            cascade = CascadeType.MERGE,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    private Set<Composer> composers = new HashSet<Composer>();
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "song",
-            cascade = CascadeType.MERGE,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    private Set<Member> members = new HashSet<Member>();
     //endregion
 
 
@@ -102,6 +75,9 @@ public class Song extends RepresentationModel<Song> implements Serializable
         this.price = price;
         this.dateCreated = dateCreated;
         this.createdBy = createdBy;
+
+
+
     }
 
 //endregion
@@ -187,40 +163,6 @@ public class Song extends RepresentationModel<Song> implements Serializable
 
     public void setMember(Member member) {
         this.member = member;
-    }
-
-
-
-    public Set<Publisher> getPublishers() {
-        return publishers;
-    }
-
-    public void setPublishers(Set<Publisher> publishers) {
-        this.publishers = publishers;
-    }
-
-    public Set<Genre> getGenres() {
-        return genres;
-    }
-
-    public void setGenres(Set<Genre> genres) {
-        this.genres = genres;
-    }
-
-    public Set<Composer> getComposers() {
-        return composers;
-    }
-
-    public void setComposers(Set<Composer> composers) {
-        this.composers = composers;
-    }
-
-    public Set<Member> getMembers() {
-        return members;
-    }
-
-    public void setMembers(Set<Member> members) {
-        this.members = members;
     }
 
     //endregion

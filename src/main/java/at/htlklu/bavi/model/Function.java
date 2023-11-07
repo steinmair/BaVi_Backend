@@ -3,12 +3,15 @@ package at.htlklu.bavi.model;
 
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "Function")
@@ -29,6 +32,13 @@ public class Function extends RepresentationModel<Function> implements Serializa
 
     @NotBlank
     private String name;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "function",
+            cascade = CascadeType.MERGE,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private Set<Member> members = new HashSet<Member>();
 
     //endregion
 
@@ -65,8 +75,15 @@ public class Function extends RepresentationModel<Function> implements Serializa
         this.name = name;
     }
 
+    public Set<Member> getMembers() {
+        return members;
+    }
 
-    //endregion
+    public void setMembers(Set<Member> members) {
+        this.members = members;
+    }
+
+//endregion
 
 
 
