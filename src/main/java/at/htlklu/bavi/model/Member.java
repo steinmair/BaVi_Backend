@@ -53,6 +53,7 @@ public class Member extends RepresentationModel<Member> implements Serializable
     private String city;
 
 
+    // https://www.baeldung.com/jpa-many-to-many
     @JsonIgnore
     @ManyToMany
     @JoinTable(
