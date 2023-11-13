@@ -34,11 +34,8 @@ public class Function extends RepresentationModel<Function> implements Serializa
     private String name;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "function",
-            cascade = CascadeType.MERGE,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    private Set<Member> members = new HashSet<Member>();
+    @ManyToMany(mappedBy = "functions")
+    Set<Member> members;
 
     //endregion
 

@@ -54,18 +54,22 @@ public class Member extends RepresentationModel<Member> implements Serializable
 
 
     @JsonIgnore
-    @OneToMany(mappedBy = "member",
-            cascade = CascadeType.MERGE,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    private Set<Function> functions = new HashSet<Function>();
+    @ManyToMany
+    @JoinTable(
+            name = "MemberFunction",
+            joinColumns = @JoinColumn(name = "MEMBER_ID"),
+            inverseJoinColumns = @JoinColumn(name = "FUNCTION_ID")
+    )
+    Set<Function> functions;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "member",
-            cascade = CascadeType.MERGE,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    private Set<Instrument> instruments = new HashSet<Instrument>();
+    @ManyToMany
+    @JoinTable(
+            name = "MemberFunction",
+            joinColumns = @JoinColumn(name = "MEMBER_ID"),
+            inverseJoinColumns = @JoinColumn(name = "INSTRUMENT_ID")
+    )
+    Set<Instrument> instruments;
 
     @JsonIgnore
     @OneToMany(mappedBy = "member",

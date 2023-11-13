@@ -82,7 +82,22 @@ public class Song extends RepresentationModel<Song> implements Serializable
 
 //endregion
 
+//region toString
 
+    @Override
+    public String toString() {
+        return "Song{" +
+                "songId=" + songId +
+                ", name='" + name + '\'' +
+                ", url='" + url + '\'' +
+                ", price=" + price +
+                ", dateCreated=" + dateCreated +
+                ", createdBy='" + createdBy + '\'' +
+                '}';
+    }
+
+
+    //endregion
     //region Getter and Setter
 
     public Integer getSongId() {

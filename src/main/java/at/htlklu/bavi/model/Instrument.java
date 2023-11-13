@@ -32,11 +32,9 @@ public class Instrument extends RepresentationModel<Instrument> implements Seria
     private String name;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "instrument",
-            cascade = CascadeType.MERGE,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    private Set<Member> members = new HashSet<Member>();
+
+    @ManyToMany(mappedBy = "instruments")
+    Set<Member> members;
 
     //endregion
 
