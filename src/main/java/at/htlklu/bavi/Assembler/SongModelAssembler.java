@@ -17,6 +17,6 @@ class SongModelAssembler implements RepresentationModelAssembler<Song, EntityMod
 
         return EntityModel.of(song, //
                 linkTo(methodOn(SongController.class).one(song.getSongId())).withSelfRel(),
-                linkTo(methodOn(SongController.class).all()).withRel("employees"));
+                linkTo(methodOn(SongController.class).all()).withRel("songs"));
     }
 }
