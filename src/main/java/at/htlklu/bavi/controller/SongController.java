@@ -3,6 +3,9 @@ package at.htlklu.bavi.controller;
 import at.htlklu.bavi.Assembler.SongModelAssembler;
 import at.htlklu.bavi.model.Song;
 import at.htlklu.bavi.repository.SongsRepository;
+import at.htlklu.bavi.restController.TemplateRestController;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -17,19 +20,23 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@RequestMapping("/songs")
 public class SongController {
 
     //https://spring.io/guides/tutorials/rest/
     private final SongsRepository songsRepository;
     private final SongModelAssembler songModelAssembler;
+	//region Properties
+	private static final Logger logger = LogManager.getLogger(SongController.class);
 
     public SongController(SongsRepository songsRepository, SongModelAssembler songModelAssembler) {
         this.songsRepository = songsRepository;
         this.songModelAssembler = songModelAssembler;
     }
 
-    @GetMapping("/songs")
+    @GetMapping("")
     public CollectionModel<EntityModel<Song>> all() {
+        logger.info("Songs/all Method called");
 
         List<EntityModel<Song>> employees = songsRepository.findAll().stream() //
                 .map(songModelAssembler::toModel) //
@@ -38,7 +45,7 @@ public class SongController {
         return CollectionModel.of(employees, linkTo(methodOn(SongController.class).all()).withSelfRel());
     }
 
-    @PostMapping("/songs")
+    @PostMapping("")
     ResponseEntity<?> newSong(@RequestBody Song newSong) {
 
         EntityModel<Song> entityModel = songModelAssembler.toModel(songsRepository.save(newSong));
@@ -49,7 +56,7 @@ public class SongController {
     }
 
     //Single Song
-    @GetMapping("/songs/{id}")
+    @GetMapping("/{id}")
     public EntityModel<Song> one(@PathVariable Integer id){
 
         Song song = songsRepository.findById(id).orElseThrow(() -> new NotFoundException("Song ("+id + ")not found"));
@@ -57,7 +64,7 @@ public class SongController {
         return songModelAssembler.toModel(song);
     }
 
-    @PutMapping("/songs/{id}")
+    @PutMapping("/{id}")
     ResponseEntity<?> replaceSong(@RequestBody Song newSong, @PathVariable Integer id){
 
 
@@ -83,7 +90,7 @@ public class SongController {
 
     }
 
-    @DeleteMapping("/songs/{id}")
+    @DeleteMapping("/{id}")
     ResponseEntity<?> deleteSong(@PathVariable Integer id) {
 
         songsRepository.deleteById(id);

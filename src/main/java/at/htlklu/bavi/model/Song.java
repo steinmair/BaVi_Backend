@@ -40,6 +40,7 @@ public class Song extends RepresentationModel<Song> implements Serializable
     @Column(name = "DATE_CREATED")
     @DateTimeFormat(pattern = "dd.MM.yyyy")
     private LocalDate dateCreated;
+    @Column(name = "created_by")
     private String createdBy;
 
 
