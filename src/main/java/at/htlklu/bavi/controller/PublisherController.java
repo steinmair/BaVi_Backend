@@ -18,6 +18,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@RequestMapping("/publishers")
 public class PublisherController {
 
     //https://spring.io/guides/tutorials/rest/
@@ -29,7 +30,7 @@ public class PublisherController {
         this.publisherModelAssembler = publisherModelAssembler;
     }
 
-    @GetMapping("/publishers")
+    @GetMapping("")
     public CollectionModel<EntityModel<Publisher>> all() {
 
         List<EntityModel<Publisher>> publishers = publishersRepository.findAll().stream() //
@@ -39,7 +40,7 @@ public class PublisherController {
         return CollectionModel.of(publishers, linkTo(methodOn(PublisherController.class).all()).withSelfRel());
     }
 
-    @PostMapping("/publishers")
+    @PostMapping("")
     ResponseEntity<?> newPublisher(@RequestBody Publisher newPublisher) {
 
         EntityModel<Publisher> entityModel = publisherModelAssembler.toModel(publishersRepository.save(newPublisher));
@@ -50,7 +51,7 @@ public class PublisherController {
     }
 
     //Single Song
-    @GetMapping("/publishers/{id}")
+    @GetMapping("/{id}")
     public EntityModel<Publisher> one(@PathVariable Integer id){
 
         Publisher publisher = publishersRepository.findById(id).orElseThrow(() -> new NotFoundException("Publisher (" + id + ")not found"));
@@ -58,7 +59,7 @@ public class PublisherController {
         return publisherModelAssembler.toModel(publisher);
     }
 
-    @PutMapping("/publishers/{id}")
+    @PutMapping("/{id}")
     ResponseEntity<?> replacePublisher(@RequestBody Publisher newPublisher, @PathVariable Integer id){
 
 
@@ -80,7 +81,7 @@ public class PublisherController {
 
     }
 
-    @DeleteMapping("/publishers/{id}")
+    @DeleteMapping("/{id}")
     ResponseEntity<?> deletePublisher(@PathVariable Integer id) {
 
         publishersRepository.deleteById(id);

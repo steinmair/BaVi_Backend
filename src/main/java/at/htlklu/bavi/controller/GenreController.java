@@ -20,9 +20,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@RequestMapping("/genres")
 public class GenreController {
 
     //https://spring.io/guides/tutorials/rest/
+
+    //http://localhost:8082/genres
     private final GenresRepository genresRepository;
     private final GenreModelAssembler genreModelAssembler;
 
@@ -31,7 +34,7 @@ public class GenreController {
         this.genreModelAssembler = genreModelAssembler;
     }
 
-    @GetMapping("/genres")
+    @GetMapping("")
     public CollectionModel<EntityModel<Genre>> all() {
 
         List<EntityModel<Genre>> genres = genresRepository.findAll().stream() //
@@ -41,7 +44,7 @@ public class GenreController {
         return CollectionModel.of(genres, linkTo(methodOn(GenreController.class).all()).withSelfRel());
     }
 
-    @PostMapping("/genres")
+    @PostMapping("")
     ResponseEntity<?> newGenre(@RequestBody Genre newGenre) {
 
         EntityModel<Genre> entityModel = genreModelAssembler.toModel(genresRepository.save(newGenre));
@@ -52,7 +55,7 @@ public class GenreController {
     }
 
     //Single Song
-    @GetMapping("/genres/{id}")
+    @GetMapping("/{id}")
     public EntityModel<Genre> one(@PathVariable Integer id){
 
         Genre genre = genresRepository.findById(id).orElseThrow(() -> new NotFoundException("Genre (" + id + ") not found"));
@@ -60,7 +63,7 @@ public class GenreController {
         return genreModelAssembler.toModel(genre);
     }
 
-    @PutMapping("/genres/{id}")
+    @PutMapping("/{id}")
     ResponseEntity<?> replaceGenre(@RequestBody Genre newGenre, @PathVariable Integer id){
 
 
@@ -82,7 +85,7 @@ public class GenreController {
 
     }
 
-    @DeleteMapping("/genres/{id}")
+    @DeleteMapping("/{id}")
     ResponseEntity<?> deleteGenre(@PathVariable Integer id) {
 
         genresRepository.deleteById(id);

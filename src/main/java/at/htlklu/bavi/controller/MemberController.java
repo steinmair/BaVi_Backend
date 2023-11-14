@@ -17,6 +17,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@RequestMapping("/members")
 public class MemberController {
 
     //https://spring.io/guides/tutorials/rest/
@@ -28,7 +29,7 @@ public class MemberController {
         this.memberModelAssembler = memberModelAssembler;
     }
 
-    @GetMapping("/members")
+    @GetMapping("")
     public CollectionModel<EntityModel<Member>> all() {
 
         List<EntityModel<Member>> members = membersRepository.findAll().stream() //
@@ -38,7 +39,7 @@ public class MemberController {
         return CollectionModel.of(members, linkTo(methodOn(MemberController.class).all()).withSelfRel());
     }
 
-    @PostMapping("/members")
+    @PostMapping("")
     ResponseEntity<?> newMember(@RequestBody Member newMember) {
 
         EntityModel<Member> entityModel = memberModelAssembler.toModel(membersRepository.save(newMember));
@@ -49,7 +50,7 @@ public class MemberController {
     }
 
     //Single Song
-    @GetMapping("/members/{id}")
+    @GetMapping("/{id}")
     public EntityModel<Member> one(@PathVariable Integer id){
 
         Member member = membersRepository.findById(id).orElseThrow(() -> new NotFoundException("Member ("+ id + ") not found"));
@@ -57,7 +58,7 @@ public class MemberController {
         return memberModelAssembler.toModel(member);
     }
 
-    @PutMapping("/members/{id}")
+    @PutMapping("/{id}")
     ResponseEntity<?> replaceMember(@RequestBody Member newMember, @PathVariable Integer id){
 
 
@@ -88,7 +89,7 @@ public class MemberController {
 
     }
 
-    @DeleteMapping("/members/{id}")
+    @DeleteMapping("/{id}")
     ResponseEntity<?> deleteMember(@PathVariable Integer id) {
 
         membersRepository.deleteById(id);

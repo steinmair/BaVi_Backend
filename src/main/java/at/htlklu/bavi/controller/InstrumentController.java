@@ -20,6 +20,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@RequestMapping("/instruments")
 public class InstrumentController {
 
     //https://spring.io/guides/tutorials/rest/
@@ -31,7 +32,7 @@ public class InstrumentController {
         this.instrumentModelAssembler = instrumentModelAssembler;
     }
 
-    @GetMapping("/instruments")
+    @GetMapping("")
     public CollectionModel<EntityModel<Instrument>> all() {
 
         List<EntityModel<Instrument>> instruments = instrumentsRepository.findAll().stream() //
@@ -41,7 +42,7 @@ public class InstrumentController {
         return CollectionModel.of(instruments, linkTo(methodOn(InstrumentController.class).all()).withSelfRel());
     }
 
-    @PostMapping("/instruments")
+    @PostMapping("")
     ResponseEntity<?> newInstrument(@RequestBody Instrument newInstrument) {
 
         EntityModel<Instrument> entityModel = instrumentModelAssembler.toModel(instrumentsRepository.save(newInstrument));
@@ -52,7 +53,7 @@ public class InstrumentController {
     }
 
     //Single Song
-    @GetMapping("/instruments/{id}")
+    @GetMapping("/{id}")
     public EntityModel<Instrument> one(@PathVariable Integer id){
 
         Instrument instrument = instrumentsRepository.findById(id).orElseThrow(() -> new NotFoundException("Instrument ("+ id + ")not found"));
@@ -60,7 +61,7 @@ public class InstrumentController {
         return instrumentModelAssembler.toModel(instrument);
     }
 
-    @PutMapping("/instruments/{id}")
+    @PutMapping("/{id}")
     ResponseEntity<?> replaceInstrument(@RequestBody Instrument newInstrument, @PathVariable Integer id){
 
 
@@ -84,7 +85,7 @@ public class InstrumentController {
 
     }
 
-    @DeleteMapping("/instruments/{id}")
+    @DeleteMapping("/{id}")
     ResponseEntity<?> deleteInstrument(@PathVariable Integer id) {
 
         instrumentsRepository.deleteById(id);
