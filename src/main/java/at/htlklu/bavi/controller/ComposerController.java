@@ -56,7 +56,7 @@ public class ComposerController {
     @GetMapping("/composers/{id}")
     public EntityModel<Composer> one(@PathVariable Integer id){
 
-        Composer composer = composersRepository.findById(id).orElseThrow(() -> new NotFoundException(id + "not found"));
+        Composer composer = composersRepository.findById(id).orElseThrow(() -> new NotFoundException("Composer (" + id + ") not found"));
 
         return composerModelAssembler.toModel(composer);
     }

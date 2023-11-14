@@ -55,7 +55,7 @@ public class GenreController {
     @GetMapping("/genres/{id}")
     public EntityModel<Genre> one(@PathVariable Integer id){
 
-        Genre genre = genresRepository.findById(id).orElseThrow(() -> new NotFoundException(id + "not found"));
+        Genre genre = genresRepository.findById(id).orElseThrow(() -> new NotFoundException("Genre (" + id + ") not found"));
 
         return genreModelAssembler.toModel(genre);
     }

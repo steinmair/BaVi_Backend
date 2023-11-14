@@ -52,7 +52,7 @@ public class MemberController {
     @GetMapping("/members/{id}")
     public EntityModel<Member> one(@PathVariable Integer id){
 
-        Member member = membersRepository.findById(id).orElseThrow(() -> new NotFoundException(id + "not found"));
+        Member member = membersRepository.findById(id).orElseThrow(() -> new NotFoundException("Member ("+ id + ") not found"));
 
         return memberModelAssembler.toModel(member);
     }
@@ -79,16 +79,6 @@ public class MemberController {
                     return membersRepository.save(newMember);
                 });
 
-        /*
-        this.firstname = firstname;
-        this.surname = surname;
-        this.birthdate = birthdate;
-        this.phone = phone;
-        this.eMail = eMail;
-        this.dateJoined = dateJoined;
-        this.street = street;
-        this.zipCode = zipCode;
-        this.city = city;*/
 
         EntityModel<Member> entityModel = memberModelAssembler.toModel(updatedMember);
 

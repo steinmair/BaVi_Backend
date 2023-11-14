@@ -53,7 +53,7 @@ public class PublisherController {
     @GetMapping("/publishers/{id}")
     public EntityModel<Publisher> one(@PathVariable Integer id){
 
-        Publisher publisher = publishersRepository.findById(id).orElseThrow(() -> new NotFoundException(id + "not found"));
+        Publisher publisher = publishersRepository.findById(id).orElseThrow(() -> new NotFoundException("Publisher (" + id + ")not found"));
 
         return publisherModelAssembler.toModel(publisher);
     }

@@ -52,7 +52,7 @@ public class SongController {
     @GetMapping("/songs/{id}")
     public EntityModel<Song> one(@PathVariable Integer id){
 
-        Song song = songsRepository.findById(id).orElseThrow(() -> new NotFoundException(id + "not found"));
+        Song song = songsRepository.findById(id).orElseThrow(() -> new NotFoundException("Song ("+id + ")not found"));
 
         return songModelAssembler.toModel(song);
     }

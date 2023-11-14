@@ -55,7 +55,7 @@ public class FunctionController {
     @GetMapping("/functions/{id}")
     public EntityModel<Function> one(@PathVariable Integer id){
 
-        Function function = functionsRepository.findById(id).orElseThrow(() -> new NotFoundException(id + "not found"));
+        Function function = functionsRepository.findById(id).orElseThrow(() -> new NotFoundException("Function ("+id + ")not found"));
 
         return functionModelAssembler.toModel(function);
     }

@@ -55,7 +55,7 @@ public class InstrumentController {
     @GetMapping("/instruments/{id}")
     public EntityModel<Instrument> one(@PathVariable Integer id){
 
-        Instrument instrument = instrumentsRepository.findById(id).orElseThrow(() -> new NotFoundException(id + "not found"));
+        Instrument instrument = instrumentsRepository.findById(id).orElseThrow(() -> new NotFoundException("Instrument ("+ id + ")not found"));
 
         return instrumentModelAssembler.toModel(instrument);
     }
