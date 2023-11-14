@@ -26,7 +26,7 @@ public class Instrument extends RepresentationModel<Instrument> implements Seria
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "INSTRUMENT_ID")
-    private Integer functionId;
+    private Integer instrumentId;
 
     @NotBlank
     private String name;
@@ -45,8 +45,8 @@ public class Instrument extends RepresentationModel<Instrument> implements Seria
 
     }
 
-    public Instrument(Integer functionId, String name) {
-        this.functionId = functionId;
+    public Instrument(Integer instrumentId, String name) {
+        this.instrumentId = instrumentId;
         this.name = name;
     }
 
@@ -55,12 +55,13 @@ public class Instrument extends RepresentationModel<Instrument> implements Seria
 
     //region Getter and Setter
 
-    public Integer getFunctionId() {
-        return functionId;
+
+    public Integer getInstrumentId() {
+        return instrumentId;
     }
 
-    public void setFunctionId(Integer functionId) {
-        this.functionId = functionId;
+    public void setInstrumentId(Integer instrumentId) {
+        this.instrumentId = instrumentId;
     }
 
     public String getName() {
