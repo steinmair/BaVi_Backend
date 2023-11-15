@@ -6,6 +6,8 @@ import at.htlklu.bavi.model.Function;
 import at.htlklu.bavi.model.Member;
 import at.htlklu.bavi.repository.FunctionsRepository;
 import at.htlklu.bavi.repository.MembersRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -27,6 +29,8 @@ public class FunctionController {
     private final FunctionsRepository functionsRepository;
     private final FunctionModelAssembler functionModelAssembler;
 
+    private static final Logger logger = LogManager.getLogger(FunctionController.class);
+
     public FunctionController(FunctionsRepository functionsRepository, FunctionModelAssembler functionModelAssembler) {
         this.functionsRepository = functionsRepository;
         this.functionModelAssembler = functionModelAssembler;
@@ -34,6 +38,8 @@ public class FunctionController {
 
     @GetMapping("")
     public CollectionModel<EntityModel<Function>> all() {
+
+        logger.info("/functions all Method called");
 
         List<EntityModel<Function>> functions = functionsRepository.findAll().stream() //
                 .map(functionModelAssembler::toModel) //
@@ -44,6 +50,8 @@ public class FunctionController {
 
     @PostMapping("")
     ResponseEntity<?> newFunction(@RequestBody Function newFunction) {
+
+        logger.info("/functions newFunction Method called");
 
         EntityModel<Function> entityModel = functionModelAssembler.toModel(functionsRepository.save(newFunction));
 
@@ -56,6 +64,8 @@ public class FunctionController {
     @GetMapping("/{id}")
     public EntityModel<Function> one(@PathVariable Integer id){
 
+        logger.info("/functions/{id} one Method called");
+
         Function function = functionsRepository.findById(id).orElseThrow(() -> new NotFoundException("Function ("+id + ")not found"));
 
         return functionModelAssembler.toModel(function);
@@ -64,6 +74,7 @@ public class FunctionController {
     @PutMapping("/{id}")
     ResponseEntity<?> replaceFunction(@RequestBody Function newFunction, @PathVariable Integer id){
 
+        logger.info("/functions/{id} replaceFunciton Method called");
 
         Function updatedFunction = functionsRepository.findById(id) //
                 .map(function -> {
@@ -86,6 +97,8 @@ public class FunctionController {
 
     @DeleteMapping("/{id}")
     ResponseEntity<?> deleteFunction(@PathVariable Integer id) {
+
+        logger.info("/functions/{id} deleteFunciton Method called");
 
         functionsRepository.deleteById(id);
 

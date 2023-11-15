@@ -4,6 +4,8 @@ import at.htlklu.bavi.Assembler.PublisherModelAssembler;
 import at.htlklu.bavi.model.Publisher;
 import at.htlklu.bavi.model.Song;
 import at.htlklu.bavi.repository.PublishersRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -24,6 +26,7 @@ public class PublisherController {
     //https://spring.io/guides/tutorials/rest/
     private final PublishersRepository publishersRepository;
     private final PublisherModelAssembler publisherModelAssembler;
+    private static final Logger logger = LogManager.getLogger(PublisherController.class);
 
     public PublisherController(PublishersRepository publishersRepository, PublisherModelAssembler publisherModelAssembler) {
         this.publishersRepository = publishersRepository;
@@ -32,6 +35,8 @@ public class PublisherController {
 
     @GetMapping("")
     public CollectionModel<EntityModel<Publisher>> all() {
+
+        logger.info("/publishers all Method called");
 
         List<EntityModel<Publisher>> publishers = publishersRepository.findAll().stream() //
                 .map(publisherModelAssembler::toModel) //
@@ -42,6 +47,8 @@ public class PublisherController {
 
     @PostMapping("")
     ResponseEntity<?> newPublisher(@RequestBody Publisher newPublisher) {
+
+        logger.info("/publishers newPublisher Method called");
 
         EntityModel<Publisher> entityModel = publisherModelAssembler.toModel(publishersRepository.save(newPublisher));
 
@@ -54,6 +61,8 @@ public class PublisherController {
     @GetMapping("/{id}")
     public EntityModel<Publisher> one(@PathVariable Integer id){
 
+        logger.info("/publishers/{id} one Method called");
+
         Publisher publisher = publishersRepository.findById(id).orElseThrow(() -> new NotFoundException("Publisher (" + id + ")not found"));
 
         return publisherModelAssembler.toModel(publisher);
@@ -62,6 +71,8 @@ public class PublisherController {
     @PutMapping("/{id}")
     ResponseEntity<?> replacePublisher(@RequestBody Publisher newPublisher, @PathVariable Integer id){
 
+
+        logger.info("/publishers/{id} replacePublisher Method called");
 
         Publisher updatedPublisher = publishersRepository.findById(id) //
                 .map(publisher -> {
@@ -83,6 +94,8 @@ public class PublisherController {
 
     @DeleteMapping("/{id}")
     ResponseEntity<?> deletePublisher(@PathVariable Integer id) {
+
+        logger.info("/publishers/{id} deletePublisher Method called");
 
         publishersRepository.deleteById(id);
 

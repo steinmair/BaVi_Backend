@@ -6,6 +6,8 @@ import at.htlklu.bavi.model.Genre;
 import at.htlklu.bavi.model.Member;
 import at.htlklu.bavi.repository.GenresRepository;
 import at.htlklu.bavi.repository.MembersRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -29,6 +31,9 @@ public class GenreController {
     private final GenresRepository genresRepository;
     private final GenreModelAssembler genreModelAssembler;
 
+    private static final Logger logger = LogManager.getLogger(GenreController.class);
+
+
     public GenreController(GenresRepository genresRepository, GenreModelAssembler genreModelAssembler) {
         this.genresRepository = genresRepository;
         this.genreModelAssembler = genreModelAssembler;
@@ -36,6 +41,9 @@ public class GenreController {
 
     @GetMapping("")
     public CollectionModel<EntityModel<Genre>> all() {
+
+        logger.info("/genres all Method called");
+
 
         List<EntityModel<Genre>> genres = genresRepository.findAll().stream() //
                 .map(genreModelAssembler::toModel) //
@@ -46,6 +54,8 @@ public class GenreController {
 
     @PostMapping("")
     ResponseEntity<?> newGenre(@RequestBody Genre newGenre) {
+
+        logger.info("/genres newGenre Method called");
 
         EntityModel<Genre> entityModel = genreModelAssembler.toModel(genresRepository.save(newGenre));
 
@@ -58,6 +68,8 @@ public class GenreController {
     @GetMapping("/{id}")
     public EntityModel<Genre> one(@PathVariable Integer id){
 
+        logger.info("/genres/{id} one Method called");
+
         Genre genre = genresRepository.findById(id).orElseThrow(() -> new NotFoundException("Genre (" + id + ") not found"));
 
         return genreModelAssembler.toModel(genre);
@@ -65,6 +77,8 @@ public class GenreController {
 
     @PutMapping("/{id}")
     ResponseEntity<?> replaceGenre(@RequestBody Genre newGenre, @PathVariable Integer id){
+
+        logger.info("/genres/{id} replaceGenre Method called");
 
 
         Genre updatedGenre = genresRepository.findById(id) //
@@ -87,6 +101,8 @@ public class GenreController {
 
     @DeleteMapping("/{id}")
     ResponseEntity<?> deleteGenre(@PathVariable Integer id) {
+
+        logger.info("/genres/{id} deleteGenre Method called");
 
         genresRepository.deleteById(id);
 

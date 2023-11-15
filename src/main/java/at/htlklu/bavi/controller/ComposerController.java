@@ -7,6 +7,8 @@ import at.htlklu.bavi.model.Function;
 import at.htlklu.bavi.model.Member;
 import at.htlklu.bavi.repository.ComposersRepository;
 import at.htlklu.bavi.repository.MembersRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -28,6 +30,8 @@ public class ComposerController {
     private final ComposersRepository composersRepository;
     private final ComposerModelAssembler composerModelAssembler;
 
+    private static final Logger logger = LogManager.getLogger(ComposerController.class);
+
     public ComposerController(ComposersRepository composersRepository, ComposerModelAssembler composerModelAssembler) {
         this.composersRepository = composersRepository;
         this.composerModelAssembler = composerModelAssembler;
@@ -35,6 +39,8 @@ public class ComposerController {
 
     @GetMapping("")
     public CollectionModel<EntityModel<Composer>> all() {
+
+        logger.info("/composers all Method called");
 
         List<EntityModel<Composer>> composers = composersRepository.findAll().stream() //
                 .map(composerModelAssembler::toModel) //
@@ -45,6 +51,8 @@ public class ComposerController {
 
     @PostMapping("")
     ResponseEntity<?> newComposer(@RequestBody Composer newComposer) {
+
+        logger.info("/composers newComposer Method called");
 
         EntityModel<Composer> entityModel = composerModelAssembler.toModel(composersRepository.save(newComposer));
 
@@ -57,6 +65,8 @@ public class ComposerController {
     @GetMapping("/{id}")
     public EntityModel<Composer> one(@PathVariable Integer id){
 
+        logger.info("/composers/{id} one Method called");
+
         Composer composer = composersRepository.findById(id).orElseThrow(() -> new NotFoundException("Composer (" + id + ") not found"));
 
         return composerModelAssembler.toModel(composer);
@@ -65,6 +75,7 @@ public class ComposerController {
     @PutMapping("/{id}")
     ResponseEntity<?> replaceComposer(@RequestBody Composer newComposer, @PathVariable Integer id){
 
+        logger.info("/composers/{id} replaceComposer Method called");
 
         Composer updatedComposer = composersRepository.findById(id) //
                 .map(composer -> {
@@ -89,6 +100,8 @@ public class ComposerController {
 
     @DeleteMapping("/{id}")
     ResponseEntity<?> deleteComposer(@PathVariable Integer id) {
+
+        logger.info("/composers/{id} deleteComposer Method called");
 
         composersRepository.deleteById(id);
 
