@@ -21,6 +21,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@RequestMapping("/composers")
 public class ComposerController {
 
     //https://spring.io/guides/tutorials/rest/
@@ -32,7 +33,7 @@ public class ComposerController {
         this.composerModelAssembler = composerModelAssembler;
     }
 
-    @GetMapping("/composers")
+    @GetMapping("")
     public CollectionModel<EntityModel<Composer>> all() {
 
         List<EntityModel<Composer>> composers = composersRepository.findAll().stream() //
@@ -42,7 +43,7 @@ public class ComposerController {
         return CollectionModel.of(composers, linkTo(methodOn(ComposerController.class).all()).withSelfRel());
     }
 
-    @PostMapping("/composers")
+    @PostMapping("")
     ResponseEntity<?> newComposer(@RequestBody Composer newComposer) {
 
         EntityModel<Composer> entityModel = composerModelAssembler.toModel(composersRepository.save(newComposer));
@@ -53,7 +54,7 @@ public class ComposerController {
     }
 
     //Single Song
-    @GetMapping("/composers/{id}")
+    @GetMapping("/{id}")
     public EntityModel<Composer> one(@PathVariable Integer id){
 
         Composer composer = composersRepository.findById(id).orElseThrow(() -> new NotFoundException("Composer (" + id + ") not found"));
@@ -61,7 +62,7 @@ public class ComposerController {
         return composerModelAssembler.toModel(composer);
     }
 
-    @PutMapping("/composers/{id}")
+    @PutMapping("/{id}")
     ResponseEntity<?> replaceComposer(@RequestBody Composer newComposer, @PathVariable Integer id){
 
 
@@ -86,7 +87,7 @@ public class ComposerController {
 
     }
 
-    @DeleteMapping("/composers/{id}")
+    @DeleteMapping("/{id}")
     ResponseEntity<?> deleteComposer(@PathVariable Integer id) {
 
         composersRepository.deleteById(id);

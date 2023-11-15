@@ -20,6 +20,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@RequestMapping("/functions")
 public class FunctionController {
 
     //https://spring.io/guides/tutorials/rest/
@@ -31,7 +32,7 @@ public class FunctionController {
         this.functionModelAssembler = functionModelAssembler;
     }
 
-    @GetMapping("/functions")
+    @GetMapping("")
     public CollectionModel<EntityModel<Function>> all() {
 
         List<EntityModel<Function>> functions = functionsRepository.findAll().stream() //
@@ -41,7 +42,7 @@ public class FunctionController {
         return CollectionModel.of(functions, linkTo(methodOn(FunctionController.class).all()).withSelfRel());
     }
 
-    @PostMapping("/functions")
+    @PostMapping("")
     ResponseEntity<?> newFunction(@RequestBody Function newFunction) {
 
         EntityModel<Function> entityModel = functionModelAssembler.toModel(functionsRepository.save(newFunction));
@@ -52,7 +53,7 @@ public class FunctionController {
     }
 
     //Single Song
-    @GetMapping("/functions/{id}")
+    @GetMapping("/{id}")
     public EntityModel<Function> one(@PathVariable Integer id){
 
         Function function = functionsRepository.findById(id).orElseThrow(() -> new NotFoundException("Function ("+id + ")not found"));
@@ -60,7 +61,7 @@ public class FunctionController {
         return functionModelAssembler.toModel(function);
     }
 
-    @PutMapping("/functions/{id}")
+    @PutMapping("/{id}")
     ResponseEntity<?> replaceFunction(@RequestBody Function newFunction, @PathVariable Integer id){
 
 
@@ -83,7 +84,7 @@ public class FunctionController {
 
     }
 
-    @DeleteMapping("/functions/{id}")
+    @DeleteMapping("/{id}")
     ResponseEntity<?> deleteFunction(@PathVariable Integer id) {
 
         functionsRepository.deleteById(id);
