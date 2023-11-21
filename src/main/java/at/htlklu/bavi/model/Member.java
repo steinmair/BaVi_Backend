@@ -39,18 +39,20 @@ public class Member extends RepresentationModel<Member> implements Serializable
     @Column(name = "BIRTHDATE")
     @DateTimeFormat(pattern = "dd.MM.yyyy")
     private LocalDate birthdate;
-    private Integer phone;
+    private String phone;
     private String eMail;
-
+    @Column(name = "HOUSE_NUMBER")
+    private Integer houseNumber;
     @Column(name = "DATE_JOINED")
     @DateTimeFormat(pattern = "dd.MM.yyyy")
     private LocalDate dateJoined;
 
-
-
     private String street;
     private Integer zipCode;
     private String city;
+    @NotNull
+    @Column(name = "CREATED_BY")
+    private String createdBy;
 
 
     // https://www.baeldung.com/jpa-many-to-many
@@ -88,7 +90,7 @@ public class Member extends RepresentationModel<Member> implements Serializable
     {
     }
 
-    public Member( String firstname, String surname, LocalDate birthdate, Integer phone, String eMail, LocalDate dateJoined, String street, Integer zipCode, String city) {
+    public Member( String firstname, String surname, LocalDate birthdate, String phone, String eMail,Integer houseNumber, LocalDate dateJoined, String street, Integer zipCode, String city,String createdBy) {
 
         super();
         this.firstname = firstname;
@@ -96,10 +98,12 @@ public class Member extends RepresentationModel<Member> implements Serializable
         this.birthdate = birthdate;
         this.phone = phone;
         this.eMail = eMail;
+        this.houseNumber = houseNumber;
         this.dateJoined = dateJoined;
         this.street = street;
         this.zipCode = zipCode;
         this.city = city;
+        this.createdBy = createdBy;
 
 
 
@@ -109,6 +113,23 @@ public class Member extends RepresentationModel<Member> implements Serializable
 
 
     //region Getter and Setter
+
+
+    public Integer getHouseNumber() {
+        return houseNumber;
+    }
+
+    public void setHouseNumber(Integer houseNumber) {
+        this.houseNumber = houseNumber;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
 
     public Integer getMemberId() {
         return memberId;
@@ -142,11 +163,11 @@ public class Member extends RepresentationModel<Member> implements Serializable
         this.birthdate = birthdate;
     }
 
-    public Integer getPhone() {
+    public String getPhone() {
         return phone;
     }
 
-    public void setPhone(Integer phone) {
+    public void setPhone(String phone) {
         this.phone = phone;
     }
 

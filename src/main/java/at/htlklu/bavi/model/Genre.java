@@ -6,6 +6,7 @@ import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,6 +30,9 @@ public class Genre extends RepresentationModel<Genre> implements Serializable
 
     @NotBlank
     private String name;
+    @NotNull
+    @Column(name = "CREATED_BY")
+    private String createdBy;
 
     @JsonIgnore
     @OneToMany(mappedBy = "genre",
@@ -45,9 +49,10 @@ public class Genre extends RepresentationModel<Genre> implements Serializable
     public Genre() {
 
     }
-    public Genre(Integer genreId, String name) {
+    public Genre(Integer genreId, String name, String createdBy) {
         this.genreId = genreId;
         this.name = name;
+        this.createdBy = createdBy;
     }
 
 
@@ -55,6 +60,15 @@ public class Genre extends RepresentationModel<Genre> implements Serializable
 
 
     //region Getter and Setter
+
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
 
     public Integer getGenreId() {
         return genreId;

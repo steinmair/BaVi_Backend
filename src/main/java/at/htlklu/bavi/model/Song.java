@@ -30,19 +30,17 @@ public class Song extends RepresentationModel<Song> implements Serializable
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SONG_ID")
     private Integer songId;
-
     @NotBlank
     private String name;
-    @NotBlank
+    @Column(name = "URL")
     private String url;
-    @NotNull
+    @Column(name = "PRICE")
     private Double price;
     @Column(name = "DATE_CREATED")
     @DateTimeFormat(pattern = "dd.MM.yyyy")
     private LocalDate dateCreated;
-    @Column(name = "created_by")
+    @Column(name = "CREATED_BY")
     private String createdBy;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PUBLISHER_ID")

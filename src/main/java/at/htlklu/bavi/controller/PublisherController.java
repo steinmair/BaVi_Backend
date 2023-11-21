@@ -66,6 +66,7 @@ public class PublisherController {
         Publisher updatedPublisher = publishersRepository.findById(id) //
                 .map(publisher -> {
                     publisher.setName(newPublisher.getName());
+                    publisher.setCreatedBy(newPublisher.getCreatedBy());
                     return publishersRepository.save(publisher);
                 }) //
                 .orElseGet(() -> {

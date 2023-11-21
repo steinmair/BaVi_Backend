@@ -70,6 +70,7 @@ public class GenreController {
         Genre updatedGenre = genresRepository.findById(id) //
                 .map(genre -> {
                     genre.setName(genre.getName());
+                    genre.setCreatedBy(genre.getCreatedBy());
                     return genresRepository.save(genre);
                 }) //
                 .orElseGet(() -> {

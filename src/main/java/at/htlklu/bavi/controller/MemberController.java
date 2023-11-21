@@ -69,10 +69,12 @@ public class MemberController {
                     member.setBirthdate(member.getBirthdate());
                     member.setPhone(member.getPhone());
                     member.seteMail(member.geteMail());
+                    member.setHouseNumber(member.getHouseNumber());
                     member.setDateJoined(member.getDateJoined());
                     member.setStreet(member.getStreet());
                     member.setZipCode(member.getZipCode());
                     member.setCity(member.getCity());
+                    member.setCreatedBy(member.getCreatedBy());
                     return membersRepository.save(member);
                 }) //
                 .orElseGet(() -> {

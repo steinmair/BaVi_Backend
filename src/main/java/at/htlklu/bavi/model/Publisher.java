@@ -7,6 +7,7 @@ import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +32,10 @@ public class Publisher extends RepresentationModel<Publisher> implements Seriali
     @NotBlank
     private String name;
 
+    @NotNull
+    @Column(name = "CREATED_BY")
+    private String createdBy;
+
     @JsonIgnore
     @OneToMany(mappedBy = "publisher",
             cascade = CascadeType.MERGE,
@@ -46,9 +51,10 @@ public class Publisher extends RepresentationModel<Publisher> implements Seriali
     public Publisher() {
 
     }
-    public Publisher(Integer publisherId, String name) {
+    public Publisher(Integer publisherId, String name, String createdBy) {
         this.publisherId = publisherId;
         this.name = name;
+        this.createdBy = createdBy;
     }
 
 
@@ -56,6 +62,15 @@ public class Publisher extends RepresentationModel<Publisher> implements Seriali
 
 
     //region Getter and Setter
+
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
 
     public Integer getPublisherId() {
         return publisherId;

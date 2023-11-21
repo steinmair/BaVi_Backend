@@ -69,6 +69,7 @@ public class ComposerController {
                 .map(composer -> {
                     composer.setFirstname(composer.getFirstname());
                     composer.setSurname(composer.getSurname());
+                    composer.setCreatedBy(composer.getCreatedBy());
                     return composersRepository.save(composer);
                 }) //
                 .orElseGet(() -> {

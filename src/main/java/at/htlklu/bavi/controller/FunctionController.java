@@ -67,6 +67,7 @@ public class FunctionController {
         Function updatedFunction = functionsRepository.findById(id) //
                 .map(function -> {
                     function.setName(function.getName());
+                    function.setCreatedBy(function.getCreatedBy());
                     return functionsRepository.save(function);
                 }) //
                 .orElseGet(() -> {

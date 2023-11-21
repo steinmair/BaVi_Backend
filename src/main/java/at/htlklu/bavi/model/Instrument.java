@@ -7,6 +7,7 @@ import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +32,10 @@ public class Instrument extends RepresentationModel<Instrument> implements Seria
     @NotBlank
     private String name;
 
+    @NotNull
+    @Column(name = "CREATED_BY")
+    private String createdBy;
+
     @JsonIgnore
 
     @ManyToMany(mappedBy = "instruments")
@@ -45,9 +50,10 @@ public class Instrument extends RepresentationModel<Instrument> implements Seria
 
     }
 
-    public Instrument(Integer instrumentId, String name) {
+    public Instrument(Integer instrumentId, String name,String createdBy) {
         this.instrumentId = instrumentId;
         this.name = name;
+        this.createdBy = createdBy;
     }
 
     //endregion
@@ -55,6 +61,14 @@ public class Instrument extends RepresentationModel<Instrument> implements Seria
 
     //region Getter and Setter
 
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
 
     public Integer getInstrumentId() {
         return instrumentId;

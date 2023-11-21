@@ -68,6 +68,7 @@ public class InstrumentController {
         Instrument updatedInstrument = instrumentsRepository.findById(id) //
                 .map(instrument -> {
                     instrument.setName(instrument.getName());
+                    instrument.setCreatedBy(instrument.getCreatedBy());
 
                     return instrumentsRepository.save(instrument);
                 }) //
