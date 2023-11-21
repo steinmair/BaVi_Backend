@@ -6,6 +6,8 @@ import at.htlklu.bavi.model.Instrument;
 import at.htlklu.bavi.model.Member;
 import at.htlklu.bavi.repository.InstrumentsRepository;
 import at.htlklu.bavi.repository.MembersRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -27,6 +29,8 @@ public class InstrumentController {
     private final InstrumentsRepository instrumentsRepository;
     private final InstrumentModelAssembler instrumentModelAssembler;
 
+    private static final Logger logger = LogManager.getLogger(InstrumentController.class);
+
     public InstrumentController(InstrumentsRepository instrumentsRepository, InstrumentModelAssembler instrumentModelAssembler) {
         this.instrumentsRepository = instrumentsRepository;
         this.instrumentModelAssembler = instrumentModelAssembler;
@@ -34,6 +38,8 @@ public class InstrumentController {
 
     @GetMapping("")
     public CollectionModel<EntityModel<Instrument>> all() {
+
+        logger.info("/instruments all Method called");
 
         List<EntityModel<Instrument>> instruments = instrumentsRepository.findAll().stream() //
                 .map(instrumentModelAssembler::toModel) //
@@ -44,6 +50,8 @@ public class InstrumentController {
 
     @PostMapping("")
     ResponseEntity<?> newInstrument(@RequestBody Instrument newInstrument) {
+
+        logger.info("/instruments newInstrument Method called");
 
         EntityModel<Instrument> entityModel = instrumentModelAssembler.toModel(instrumentsRepository.save(newInstrument));
 
@@ -56,6 +64,8 @@ public class InstrumentController {
     @GetMapping("/{id}")
     public EntityModel<Instrument> one(@PathVariable Integer id){
 
+        logger.info("/instruments/{id} one Method called");
+
         Instrument instrument = instrumentsRepository.findById(id).orElseThrow(() -> new NotFoundException("Instrument ("+ id + ")not found"));
 
         return instrumentModelAssembler.toModel(instrument);
@@ -63,6 +73,8 @@ public class InstrumentController {
 
     @PutMapping("/{id}")
     ResponseEntity<?> replaceInstrument(@RequestBody Instrument newInstrument, @PathVariable Integer id){
+
+        logger.info("/instruments/{id} replaceInstrument Method called");
 
 
         Instrument updatedInstrument = instrumentsRepository.findById(id) //
@@ -88,6 +100,8 @@ public class InstrumentController {
 
     @DeleteMapping("/{id}")
     ResponseEntity<?> deleteInstrument(@PathVariable Integer id) {
+
+        logger.info("/instruments/{id} deleteInstrument Method called");
 
         instrumentsRepository.deleteById(id);
 

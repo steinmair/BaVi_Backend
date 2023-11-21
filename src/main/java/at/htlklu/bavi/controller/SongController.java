@@ -36,7 +36,8 @@ public class SongController {
 
     @GetMapping("")
     public CollectionModel<EntityModel<Song>> all() {
-        logger.info("Songs/all Method called");
+
+        logger.info("/songs all Method called");
 
         List<EntityModel<Song>> employees = songsRepository.findAll().stream() //
                 .map(songModelAssembler::toModel) //
@@ -48,6 +49,8 @@ public class SongController {
     @PostMapping("")
     ResponseEntity<?> newSong(@RequestBody Song newSong) {
 
+        logger.info("/songs newSong Method called");
+
         EntityModel<Song> entityModel = songModelAssembler.toModel(songsRepository.save(newSong));
 
         return ResponseEntity //
@@ -57,7 +60,10 @@ public class SongController {
 
     //Single Song
     @GetMapping("/{id}")
+
     public EntityModel<Song> one(@PathVariable Integer id){
+
+        logger.info("/songs/{id} one Method called");
 
         Song song = songsRepository.findById(id).orElseThrow(() -> new NotFoundException("Song ("+id + ")not found"));
 
@@ -67,6 +73,7 @@ public class SongController {
     @PutMapping("/{id}")
     ResponseEntity<?> replaceSong(@RequestBody Song newSong, @PathVariable Integer id){
 
+        logger.info("/songs/{id} replaceSong Method called");
 
         Song updatedSong = songsRepository.findById(id) //
                 .map(song -> {
@@ -92,6 +99,8 @@ public class SongController {
 
     @DeleteMapping("/{id}")
     ResponseEntity<?> deleteSong(@PathVariable Integer id) {
+
+        logger.info("/songs/{id} deleteSong Method called");
 
         songsRepository.deleteById(id);
 

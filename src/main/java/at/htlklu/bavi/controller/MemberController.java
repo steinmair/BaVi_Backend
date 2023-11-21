@@ -3,6 +3,8 @@ package at.htlklu.bavi.controller;
 import at.htlklu.bavi.Assembler.MemberModelAssembler;
 import at.htlklu.bavi.model.Member;
 import at.htlklu.bavi.repository.MembersRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -24,6 +26,8 @@ public class MemberController {
     private final MembersRepository membersRepository;
     private final MemberModelAssembler memberModelAssembler;
 
+    private static final Logger logger = LogManager.getLogger(MemberController.class);
+
     public MemberController(MembersRepository membersRepository, MemberModelAssembler memberModelAssembler) {
         this.membersRepository = membersRepository;
         this.memberModelAssembler = memberModelAssembler;
@@ -31,6 +35,8 @@ public class MemberController {
 
     @GetMapping("")
     public CollectionModel<EntityModel<Member>> all() {
+
+        logger.info("/members all Method called");
 
         List<EntityModel<Member>> members = membersRepository.findAll().stream() //
                 .map(memberModelAssembler::toModel) //
@@ -41,6 +47,8 @@ public class MemberController {
 
     @PostMapping("")
     ResponseEntity<?> newMember(@RequestBody Member newMember) {
+
+        logger.info("/members newMember Method called");
 
         EntityModel<Member> entityModel = memberModelAssembler.toModel(membersRepository.save(newMember));
 
@@ -53,6 +61,8 @@ public class MemberController {
     @GetMapping("/{id}")
     public EntityModel<Member> one(@PathVariable Integer id){
 
+        logger.info("/members/{id} one Method called");
+
         Member member = membersRepository.findById(id).orElseThrow(() -> new NotFoundException("Member ("+ id + ") not found"));
 
         return memberModelAssembler.toModel(member);
@@ -61,6 +71,7 @@ public class MemberController {
     @PutMapping("/{id}")
     ResponseEntity<?> replaceMember(@RequestBody Member newMember, @PathVariable Integer id){
 
+        logger.info("/members/{id} replaceMember Method called");
 
         Member updatedMember = membersRepository.findById(id) //
                 .map(member -> {
@@ -93,6 +104,8 @@ public class MemberController {
 
     @DeleteMapping("/{id}")
     ResponseEntity<?> deleteMember(@PathVariable Integer id) {
+
+        logger.info("/members/{id} deleteMember Method called");
 
         membersRepository.deleteById(id);
 
