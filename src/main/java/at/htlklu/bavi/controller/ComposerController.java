@@ -7,8 +7,6 @@ import at.htlklu.bavi.model.Function;
 import at.htlklu.bavi.model.Member;
 import at.htlklu.bavi.repository.ComposersRepository;
 import at.htlklu.bavi.repository.MembersRepository;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -23,24 +21,19 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
-@RequestMapping("/composers")
 public class ComposerController {
 
     //https://spring.io/guides/tutorials/rest/
     private final ComposersRepository composersRepository;
     private final ComposerModelAssembler composerModelAssembler;
 
-    private static final Logger logger = LogManager.getLogger(ComposerController.class);
-
     public ComposerController(ComposersRepository composersRepository, ComposerModelAssembler composerModelAssembler) {
         this.composersRepository = composersRepository;
         this.composerModelAssembler = composerModelAssembler;
     }
 
-    @GetMapping("")
+    @GetMapping("/composers")
     public CollectionModel<EntityModel<Composer>> all() {
-
-        logger.info("/composers all Method called");
 
         List<EntityModel<Composer>> composers = composersRepository.findAll().stream() //
                 .map(composerModelAssembler::toModel) //
@@ -49,10 +42,8 @@ public class ComposerController {
         return CollectionModel.of(composers, linkTo(methodOn(ComposerController.class).all()).withSelfRel());
     }
 
-    @PostMapping("")
+    @PostMapping("/composers")
     ResponseEntity<?> newComposer(@RequestBody Composer newComposer) {
-
-        logger.info("/composers newComposer Method called");
 
         EntityModel<Composer> entityModel = composerModelAssembler.toModel(composersRepository.save(newComposer));
 
@@ -62,20 +53,17 @@ public class ComposerController {
     }
 
     //Single Song
-    @GetMapping("/{id}")
+    @GetMapping("/composers/{id}")
     public EntityModel<Composer> one(@PathVariable Integer id){
-
-        logger.info("/composers/{id} one Method called");
 
         Composer composer = composersRepository.findById(id).orElseThrow(() -> new NotFoundException("Composer (" + id + ") not found"));
 
         return composerModelAssembler.toModel(composer);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/composers/{id}")
     ResponseEntity<?> replaceComposer(@RequestBody Composer newComposer, @PathVariable Integer id){
 
-        logger.info("/composers/{id} replaceComposer Method called");
 
         Composer updatedComposer = composersRepository.findById(id) //
                 .map(composer -> {
@@ -99,10 +87,8 @@ public class ComposerController {
 
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/composers/{id}")
     ResponseEntity<?> deleteComposer(@PathVariable Integer id) {
-
-        logger.info("/composers/{id} deleteComposer Method called");
 
         composersRepository.deleteById(id);
 
