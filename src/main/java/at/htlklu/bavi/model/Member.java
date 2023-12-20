@@ -48,6 +48,7 @@ public class Member extends RepresentationModel<Member> implements Serializable
     private LocalDate dateJoined;
 
     private String street;
+    @Column(name = "ZIP_CODE")
     private Integer zipCode;
     private String city;
     @NotNull
