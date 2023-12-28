@@ -1,98 +1,200 @@
 package at.htlklu.bavi.controller;
 
-import at.htlklu.bavi.Assembler.ComposerModelAssembler;
-import at.htlklu.bavi.Assembler.MemberModelAssembler;
+import at.htlklu.bavi.api.ErrorsUtils;
+import at.htlklu.bavi.api.LogUtils;
 import at.htlklu.bavi.model.Composer;
-import at.htlklu.bavi.model.Function;
-import at.htlklu.bavi.model.Member;
 import at.htlklu.bavi.repository.ComposersRepository;
-import at.htlklu.bavi.repository.MembersRepository;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.webjars.NotFoundException;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@RequestMapping("composers")
 public class ComposerController {
 
-    //https://spring.io/guides/tutorials/rest/
-    private final ComposersRepository composersRepository;
-    private final ComposerModelAssembler composerModelAssembler;
+    private static Logger logger = LogManager.getLogger(ComposerController.class);
+    private static final String CLASS_NAME = "ComposerId";
 
-    public ComposerController(ComposersRepository composersRepository, ComposerModelAssembler composerModelAssembler) {
-        this.composersRepository = composersRepository;
-        this.composerModelAssembler = composerModelAssembler;
+    @Autowired
+    ComposersRepository composersRepository ;
+    
+    //region GET
+
+    @GetMapping("")
+    public ResponseEntity<?> getAllComposers() {
+        logger.info(LogUtils.info(CLASS_NAME, "getAllComposers", "Retrieving all composers"));
+
+        ResponseEntity<?> result;
+        try {
+            List<Composer> composers = composersRepository.findAll();
+            if (!composers.isEmpty()) {
+                result = new ResponseEntity<>(composers, HttpStatus.OK);
+            } else {
+                result = new ResponseEntity<>("No composers found", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return result;
+    }
+    //http://localhost:8082/teachers/id
+    @GetMapping(value = "{composerId}")
+    public ResponseEntity<?> getByIdPV(@PathVariable Integer composerId){
+        logger.info(LogUtils.info(CLASS_NAME,"getByIdPV",String.format("(%d)",composerId)));
+
+        ResponseEntity<?> result;
+        Optional<Composer> optComposer = composersRepository.findById(composerId);
+        if (optComposer.isPresent()){
+
+            Composer composer = optComposer.get();
+            result =  new ResponseEntity<Composer>(composer, HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Lehrer/in mit der Id = %d nicht vorhanden",composerId),HttpStatus.NOT_FOUND);
+        }
+        return result;
     }
 
-    @GetMapping("/composers")
-    public CollectionModel<EntityModel<Composer>> all() {
+    //http://localhost:8082/teachers/id/schoolClasses
 
-        List<EntityModel<Composer>> composers = composersRepository.findAll().stream() //
-                .map(composerModelAssembler::toModel) //
-                .collect(Collectors.toList());
+    /*@GetMapping(value = "{teacherId}/schoolClasses")
+    public ResponseEntity<?> getSchoolClassesByIdPV(@PathVariable Integer teacherId){
 
-        return CollectionModel.of(composers, linkTo(methodOn(ComposerController.class).all()).withSelfRel());
+        logger.info(LogUtils.info(CLASS_NAME,"getSchoolClassesByIdPV",String.format("(%d)",teacherId)));
+
+        ResponseEntity<?> result;
+        Optional<Teacher> optTeacher = teacherRepository.findById(teacherId);
+        if (optTeacher.isPresent()){
+
+            Teacher teacher = optTeacher.get();
+            result =  new ResponseEntity<>(teacher.getSchoolClasses(), HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Lehrer/in mit der Id = %d nicht vorhanden",teacherId),HttpStatus.NOT_FOUND);
+        }
+        return result;
+
+    }*/
+    // einfügen einer neuen Ressource
+    @PostMapping(value = "")
+    public ResponseEntity<?> add(@Valid @RequestBody Composer composer,
+                                 BindingResult bindingResult) {
+
+        logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", composer)));
+
+        boolean error = false;
+        String errorMessage = "";
+
+        if (!error) {
+            error = bindingResult.hasErrors();
+            errorMessage = bindingResult.toString();
+        }
+
+        if (!error) {
+            try {
+                composersRepository.save(composer);
+            } catch (Exception e) {
+                e.printStackTrace();
+                error = true;
+                errorMessage = e.getCause().getCause().getLocalizedMessage();
+            }
+        }
+
+        ResponseEntity<?> result;
+        if (!error) {
+            result = new ResponseEntity<Composer>(composer, HttpStatus.OK);
+
+        } else {
+            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+
     }
 
-    @PostMapping("/composers")
-    ResponseEntity<?> newComposer(@RequestBody Composer newComposer) {
+    // ändern einer vorhandenen Ressource
+    @PutMapping(value = "")
+    public ResponseEntity<?> update(@Valid @RequestBody Composer composer,
+                                    BindingResult bindingResult) {
 
-        EntityModel<Composer> entityModel = composerModelAssembler.toModel(composersRepository.save(newComposer));
+        logger.info(LogUtils.info(CLASS_NAME, "update", String.format("(%s)", composer)));
 
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
+        boolean error = false;
+        String errorMessage = "";
+
+        if (!error) {
+            error = bindingResult.hasErrors();
+            errorMessage = bindingResult.toString();
+        }
+        if (!error) {
+            try {
+                composersRepository.save(composer);
+            } catch (Exception e) {
+                e.printStackTrace();
+                error = true;
+                errorMessage = e.getCause().getCause().getLocalizedMessage();
+            }
+        }
+        ResponseEntity<?> result;
+        if (!error) {
+            result = new ResponseEntity<Composer>(composer, HttpStatus.OK);
+
+        } else {
+            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
     }
 
-    //Single Song
-    @GetMapping("/composers/{id}")
-    public EntityModel<Composer> one(@PathVariable Integer id){
 
-        Composer composer = composersRepository.findById(id).orElseThrow(() -> new NotFoundException("Composer (" + id + ") not found"));
+    //http://localhost:8082/teachers/id (delete)
+    @DeleteMapping(value = "{composerId}")
+    public ResponseEntity<?> deletePV(@PathVariable Integer composerId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deletePV2", String.format("(%d)", composerId)));
+        boolean error = false;
+        String errorMessage = "";
+        ResponseEntity<?> result;
+        Composer composer = null;
 
-        return composerModelAssembler.toModel(composer);
+
+        if (!error) {
+            Optional<Composer> optionalComposer = composersRepository.findById(composerId);
+            if (optionalComposer.isPresent()) {
+                composer = optionalComposer.get();
+            } else {
+                error = true;
+                errorMessage = "Teacher not found";
+            }
+        }
+
+        if (!error) {
+            try {
+                composersRepository.delete(composer);
+            } catch (Exception e) {
+                error = true;
+                errorMessage = ErrorsUtils.getErrorMessage(e);
+            }
+        }
+        if (!error) {
+            result = new ResponseEntity<Composer>(composer, HttpStatus.OK);
+        } else {
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
     }
 
-    @PutMapping("/composers/{id}")
-    ResponseEntity<?> replaceComposer(@RequestBody Composer newComposer, @PathVariable Integer id){
+    //endregion
 
-
-        Composer updatedComposer = composersRepository.findById(id) //
-                .map(composer -> {
-                    composer.setFirstname(composer.getFirstname());
-                    composer.setSurname(composer.getSurname());
-                    composer.setCreatedBy(composer.getCreatedBy());
-                    return composersRepository.save(composer);
-                }) //
-                .orElseGet(() -> {
-                    newComposer.setComposerId(id);
-                    return composersRepository.save(newComposer);
-                });
-
-
-
-        EntityModel<Composer> entityModel = composerModelAssembler.toModel(updatedComposer);
-
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
-
-    }
-
-    @DeleteMapping("/composers/{id}")
-    ResponseEntity<?> deleteComposer(@PathVariable Integer id) {
-
-        composersRepository.deleteById(id);
-
-        return ResponseEntity.noContent().build();
-    }
 
 }
