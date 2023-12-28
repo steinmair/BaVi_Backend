@@ -1,111 +1,203 @@
 package at.htlklu.bavi.controller;
 
-import at.htlklu.bavi.Assembler.InstrumentModelAssembler;
-import at.htlklu.bavi.Assembler.MemberModelAssembler;
+import at.htlklu.bavi.api.ErrorsUtils;
+import at.htlklu.bavi.api.LogUtils;
 import at.htlklu.bavi.model.Instrument;
-import at.htlklu.bavi.model.Member;
 import at.htlklu.bavi.repository.InstrumentsRepository;
 import at.htlklu.bavi.repository.MembersRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.webjars.NotFoundException;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
-@RequestMapping("/instruments")
+@RequestMapping("instruments")
 public class InstrumentController {
 
-    //https://spring.io/guides/tutorials/rest/
-    private final InstrumentsRepository instrumentsRepository;
-    private final InstrumentModelAssembler instrumentModelAssembler;
+    private static Logger logger = LogManager.getLogger(SongController.class);
+    private static final String CLASS_NAME = "GenreController";
 
-    private static final Logger logger = LogManager.getLogger(InstrumentController.class);
+    @Autowired
+    InstrumentsRepository instrumentsRepository;
+    @Autowired
+    MembersRepository membersRepository;
 
-    public InstrumentController(InstrumentsRepository instrumentsRepository, InstrumentModelAssembler instrumentModelAssembler) {
-        this.instrumentsRepository = instrumentsRepository;
-        this.instrumentModelAssembler = instrumentModelAssembler;
-    }
 
+    //http://localhost:8082/instruments
     @GetMapping("")
-    public CollectionModel<EntityModel<Instrument>> all() {
+    public ResponseEntity<?> getAllInstruments() {
+        logger.info(LogUtils.info(CLASS_NAME, "getAllInstruments", "Retrieving all instruments"));
 
-        logger.info("/instruments all Method called");
+        ResponseEntity<?> result;
+        try {
+            List<Instrument> instruments = instrumentsRepository.findAll();
+            if (!instruments.isEmpty()) {
+                result = new ResponseEntity<>(instruments, HttpStatus.OK);
+            } else {
+                result = new ResponseEntity<>("No instruments found", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return result;
+    }
+    //http://localhost:8082/instruments/id
+    @GetMapping(value = "{instrumentId}")
+    public ResponseEntity<?> getByIdPV(@PathVariable Integer instrumentId){
+        logger.info(LogUtils.info(CLASS_NAME,"getByIdPV",String.format("(%d)", instrumentId)));
 
-        List<EntityModel<Instrument>> instruments = instrumentsRepository.findAll().stream() //
-                .map(instrumentModelAssembler::toModel) //
-                .collect(Collectors.toList());
+        ResponseEntity<?> result;
+        Optional<Instrument> optionalInstrument = instrumentsRepository.findById(instrumentId);
+        if (optionalInstrument.isPresent()){
 
-        return CollectionModel.of(instruments, linkTo(methodOn(InstrumentController.class).all()).withSelfRel());
+            Instrument instrument= optionalInstrument.get();
+            result =  new ResponseEntity<Instrument>(instrument, HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Instrument mit der Id = %d nicht vorhanden", instrumentId),HttpStatus.NOT_FOUND);
+        }
+        return result;
     }
 
-    @PostMapping("")
-    ResponseEntity<?> newInstrument(@RequestBody Instrument newInstrument) {
+    //http://localhost:8082/instruments/id/members
 
-        logger.info("/instruments newInstrument Method called");
+    @GetMapping(value = "{instrumentId}/members")
+    public ResponseEntity<?> getInstrumentsByIdPV(@PathVariable Integer instrumentId){
 
-        EntityModel<Instrument> entityModel = instrumentModelAssembler.toModel(instrumentsRepository.save(newInstrument));
+        logger.info(LogUtils.info(CLASS_NAME,"getMembersByIdPV",String.format("(%d)", instrumentId)));
 
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
-    }
+        ResponseEntity<?> result;
+        Optional<Instrument> optionalInstrument = instrumentsRepository.findById(instrumentId);
+        if (optionalInstrument.isPresent()){
 
-    //Single Song
-    @GetMapping("/{id}")
-    public EntityModel<Instrument> one(@PathVariable Integer id){
-
-        logger.info("/instruments/{id} one Method called");
-
-        Instrument instrument = instrumentsRepository.findById(id).orElseThrow(() -> new NotFoundException("Instrument ("+ id + ")not found"));
-
-        return instrumentModelAssembler.toModel(instrument);
-    }
-
-    @PutMapping("/{id}")
-    ResponseEntity<?> replaceInstrument(@RequestBody Instrument newInstrument, @PathVariable Integer id){
-
-        logger.info("/instruments/{id} replaceInstrument Method called");
-
-
-        Instrument updatedInstrument = instrumentsRepository.findById(id) //
-                .map(instrument -> {
-                    instrument.setName(instrument.getName());
-                    instrument.setCreatedBy(instrument.getCreatedBy());
-
-                    return instrumentsRepository.save(instrument);
-                }) //
-                .orElseGet(() -> {
-                    newInstrument.setInstrumentId(id);
-                    return instrumentsRepository.save(newInstrument);
-                });
-
-
-        EntityModel<Instrument> entityModel = instrumentModelAssembler.toModel(updatedInstrument);
-
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
+            Instrument instrument = optionalInstrument.get();
+            result =  new ResponseEntity<>(instrument.getMembers(), HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Instrument mit der Id = %d nicht vorhanden", instrumentId),HttpStatus.NOT_FOUND);
+        }
+        return result;
 
     }
+    // einfügen einer neuen Ressource
+    @PostMapping(value = "")
+    public ResponseEntity<?> add(@Valid @RequestBody Instrument instrument,
+                                 BindingResult bindingResult) {
 
-    @DeleteMapping("/{id}")
-    ResponseEntity<?> deleteInstrument(@PathVariable Integer id) {
+        logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", instrument)));
 
-        logger.info("/instruments/{id} deleteInstrument Method called");
+        boolean error = false;
+        String errorMessage = "";
 
-        instrumentsRepository.deleteById(id);
+        if (!error) {
+            error = bindingResult.hasErrors();
+            errorMessage = bindingResult.toString();
+        }
 
-        return ResponseEntity.noContent().build();
+        if (!error) {
+            try {
+                instrumentsRepository.save(instrument);
+            } catch (Exception e) {
+                e.printStackTrace();
+                error = true;
+                errorMessage = e.getCause().getCause().getLocalizedMessage();
+            }
+        }
+
+        ResponseEntity<?> result;
+        if (!error) {
+            result = new ResponseEntity<Instrument>(instrument, HttpStatus.OK);
+
+        } else {
+            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+
     }
+
+    // ändern einer vorhandenen Ressource
+    @PutMapping(value = "")
+    public ResponseEntity<?> update(@Valid @RequestBody Instrument instrument,
+                                    BindingResult bindingResult) {
+
+        logger.info(LogUtils.info(CLASS_NAME, "update", String.format("(%s)", instrument)));
+
+        boolean error = false;
+        String errorMessage = "";
+
+        if (!error) {
+            error = bindingResult.hasErrors();
+            errorMessage = bindingResult.toString();
+        }
+        if (!error) {
+            try {
+                instrumentsRepository.save(instrument);
+            } catch (Exception e) {
+                e.printStackTrace();
+                error = true;
+                errorMessage = e.getCause().getCause().getLocalizedMessage();
+            }
+        }
+        ResponseEntity<?> result;
+        if (!error) {
+            result = new ResponseEntity<Instrument>(instrument, HttpStatus.OK);
+
+        } else {
+            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+
+    //http://localhost:8082/instruments/id (delete)
+    @DeleteMapping(value = "{instrumentId}")
+    public ResponseEntity<?> deletePV(@PathVariable Integer instrumentId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", instrumentId)));
+        boolean error = false;
+        String errorMessage = "";
+        ResponseEntity<?> result;
+        Instrument instrument = null;
+
+
+        if (!error) {
+            Optional<Instrument> optionalInstrument = instrumentsRepository.findById(instrumentId);
+            if (optionalInstrument.isPresent()) {
+                instrument = optionalInstrument.get();
+            } else {
+                error = true;
+                errorMessage = "Instrument not found";
+            }
+        }
+
+        if (!error) {
+            try {
+                instrumentsRepository.delete(instrument);
+            } catch (Exception e) {
+                error = true;
+                errorMessage = ErrorsUtils.getErrorMessage(e);
+            }
+        }
+        if (!error) {
+            result = new ResponseEntity<Instrument>(instrument, HttpStatus.OK);
+        } else {
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+
+
 
 }

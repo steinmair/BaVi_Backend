@@ -1,115 +1,247 @@
 package at.htlklu.bavi.controller;
 
-import at.htlklu.bavi.Assembler.MemberModelAssembler;
+import at.htlklu.bavi.api.ErrorsUtils;
+import at.htlklu.bavi.api.LogUtils;
 import at.htlklu.bavi.model.Member;
 import at.htlklu.bavi.repository.MembersRepository;
+import at.htlklu.bavi.repository.SongsRepository;
+import at.htlklu.bavi.repository.FunctionsRepository;
+import at.htlklu.bavi.repository.InstrumentsRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.webjars.NotFoundException;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
-@RequestMapping("/members")
+@RequestMapping("members")
 public class MemberController {
 
-    //https://spring.io/guides/tutorials/rest/
-    private final MembersRepository membersRepository;
-    private final MemberModelAssembler memberModelAssembler;
+    private static Logger logger = LogManager.getLogger(SongController.class);
+    private static final String CLASS_NAME = "GenreController";
 
-    private static final Logger logger = LogManager.getLogger(MemberController.class);
+    @Autowired
+    FunctionsRepository functionsRepository;
+    @Autowired
+    InstrumentsRepository instrumentsRepository;
+    @Autowired
+    MembersRepository membersRepository;
+    @Autowired
+    SongsRepository songsRepository;
 
-    public MemberController(MembersRepository membersRepository, MemberModelAssembler memberModelAssembler) {
-        this.membersRepository = membersRepository;
-        this.memberModelAssembler = memberModelAssembler;
-    }
 
+    //http://localhost:8082/members
     @GetMapping("")
-    public CollectionModel<EntityModel<Member>> all() {
+    public ResponseEntity<?> getAllMembers() {
+        logger.info(LogUtils.info(CLASS_NAME, "getAllMembers", "Retrieving all members"));
 
-        logger.info("/members all Method called");
+        ResponseEntity<?> result;
+        try {
+            List<Member> members = membersRepository.findAll();
+            if (!members.isEmpty()) {
+                result = new ResponseEntity<>(members, HttpStatus.OK);
+            } else {
+                result = new ResponseEntity<>("No members found", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return result;
+    }
+    //http://localhost:8082/members/id
+    @GetMapping(value = "{memberId}")
+    public ResponseEntity<?> getByIdPV(@PathVariable Integer memberId){
+        logger.info(LogUtils.info(CLASS_NAME,"getByIdPV",String.format("(%d)", memberId)));
 
-        List<EntityModel<Member>> members = membersRepository.findAll().stream() //
-                .map(memberModelAssembler::toModel) //
-                .collect(Collectors.toList());
+        ResponseEntity<?> result;
+        Optional<Member> optionalMember = membersRepository.findById(memberId);
+        if (optionalMember.isPresent()){
 
-        return CollectionModel.of(members, linkTo(methodOn(MemberController.class).all()).withSelfRel());
+            Member member= optionalMember.get();
+            result =  new ResponseEntity<Member>(member, HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Member mit der Id = %d nicht vorhanden", memberId),HttpStatus.NOT_FOUND);
+        }
+        return result;
     }
 
-    @PostMapping("")
-    ResponseEntity<?> newMember(@RequestBody Member newMember) {
+    //http://localhost:8082/members/id/songs
 
-        logger.info("/members newMember Method called");
+    @GetMapping(value = "{memberId}/songs")
+    public ResponseEntity<?> getSongsByIdPV(@PathVariable Integer memberId){
 
-        EntityModel<Member> entityModel = memberModelAssembler.toModel(membersRepository.save(newMember));
+        logger.info(LogUtils.info(CLASS_NAME,"getSongsByIdPV",String.format("(%d)", memberId)));
 
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
-    }
+        ResponseEntity<?> result;
+        Optional<Member> optionalMember = membersRepository.findById(memberId);
+        if (optionalMember.isPresent()){
 
-    //Single Song
-    @GetMapping("/{id}")
-    public EntityModel<Member> one(@PathVariable Integer id){
-
-        logger.info("/members/{id} one Method called");
-
-        Member member = membersRepository.findById(id).orElseThrow(() -> new NotFoundException("Member ("+ id + ") not found"));
-
-        return memberModelAssembler.toModel(member);
-    }
-
-    @PutMapping("/{id}")
-    ResponseEntity<?> replaceMember(@RequestBody Member newMember, @PathVariable Integer id){
-
-        logger.info("/members/{id} replaceMember Method called");
-
-        Member updatedMember = membersRepository.findById(id) //
-                .map(member -> {
-                    member.setFirstname(member.getFirstname());
-                    member.setSurname(member.getSurname());
-                    member.setBirthdate(member.getBirthdate());
-                    member.setPhone(member.getPhone());
-                    member.seteMail(member.geteMail());
-                    member.setHouseNumber(member.getHouseNumber());
-                    member.setDateJoined(member.getDateJoined());
-                    member.setStreet(member.getStreet());
-                    member.setZipCode(member.getZipCode());
-                    member.setCity(member.getCity());
-                    member.setCreatedBy(member.getCreatedBy());
-                    return membersRepository.save(member);
-                }) //
-                .orElseGet(() -> {
-                    newMember.setMemberId(id);
-                    return membersRepository.save(newMember);
-                });
-
-
-        EntityModel<Member> entityModel = memberModelAssembler.toModel(updatedMember);
-
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
+            Member member = optionalMember.get();
+            result =  new ResponseEntity<>(member.getSongs(), HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Member mit der Id = %d nicht vorhanden", memberId),HttpStatus.NOT_FOUND);
+        }
+        return result;
 
     }
+    //http://localhost:8082/members/id/functions
 
-    @DeleteMapping("/{id}")
-    ResponseEntity<?> deleteMember(@PathVariable Integer id) {
+    @GetMapping(value = "{memberId}/functions")
+    public ResponseEntity<?> getFunctionsByIdPV(@PathVariable Integer memberId){
 
-        logger.info("/members/{id} deleteMember Method called");
+        logger.info(LogUtils.info(CLASS_NAME,"getFunctionsByIdPV",String.format("(%d)", memberId)));
 
-        membersRepository.deleteById(id);
+        ResponseEntity<?> result;
+        Optional<Member> optionalMember = membersRepository.findById(memberId);
+        if (optionalMember.isPresent()){
 
-        return ResponseEntity.noContent().build();
+            Member member = optionalMember.get();
+            result =  new ResponseEntity<>(member.getFunctions(), HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Member mit der Id = %d nicht vorhanden", memberId),HttpStatus.NOT_FOUND);
+        }
+        return result;
+
     }
+    //http://localhost:8082/members/id/songs
+
+    @GetMapping(value = "{memberId}/instruments")
+    public ResponseEntity<?> getInstrumentsByIdPV(@PathVariable Integer memberId){
+
+        logger.info(LogUtils.info(CLASS_NAME,"getInstrumentsByIdPV",String.format("(%d)", memberId)));
+
+        ResponseEntity<?> result;
+        Optional<Member> optionalMember = membersRepository.findById(memberId);
+        if (optionalMember.isPresent()){
+
+            Member member = optionalMember.get();
+            result =  new ResponseEntity<>(member.getInstruments(), HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Member mit der Id = %d nicht vorhanden", memberId),HttpStatus.NOT_FOUND);
+        }
+        return result;
+
+    }
+    // einfügen einer neuen Ressource
+    @PostMapping(value = "")
+    public ResponseEntity<?> add(@Valid @RequestBody Member member,
+                                 BindingResult bindingResult) {
+
+        logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", member)));
+
+        boolean error = false;
+        String errorMessage = "";
+
+        if (!error) {
+            error = bindingResult.hasErrors();
+            errorMessage = bindingResult.toString();
+        }
+
+        if (!error) {
+            try {
+                membersRepository.save(member);
+            } catch (Exception e) {
+                e.printStackTrace();
+                error = true;
+                errorMessage = e.getCause().getCause().getLocalizedMessage();
+            }
+        }
+
+        ResponseEntity<?> result;
+        if (!error) {
+            result = new ResponseEntity<Member>(member, HttpStatus.OK);
+
+        } else {
+            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+
+    }
+
+    // ändern einer vorhandenen Ressource
+    @PutMapping(value = "")
+    public ResponseEntity<?> update(@Valid @RequestBody Member member,
+                                    BindingResult bindingResult) {
+
+        logger.info(LogUtils.info(CLASS_NAME, "update", String.format("(%s)", member)));
+
+        boolean error = false;
+        String errorMessage = "";
+
+        if (!error) {
+            error = bindingResult.hasErrors();
+            errorMessage = bindingResult.toString();
+        }
+        if (!error) {
+            try {
+                membersRepository.save(member);
+            } catch (Exception e) {
+                e.printStackTrace();
+                error = true;
+                errorMessage = e.getCause().getCause().getLocalizedMessage();
+            }
+        }
+        ResponseEntity<?> result;
+        if (!error) {
+            result = new ResponseEntity<Member>(member, HttpStatus.OK);
+
+        } else {
+            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+
+    //http://localhost:8082/publishers/id (delete)
+    @DeleteMapping(value = "{memberId}")
+    public ResponseEntity<?> deletePV(@PathVariable Integer memberId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", memberId)));
+        boolean error = false;
+        String errorMessage = "";
+        ResponseEntity<?> result;
+        Member member = null;
+
+
+        if (!error) {
+            Optional<Member> optionalMember = membersRepository.findById(memberId);
+            if (optionalMember.isPresent()) {
+                member = optionalMember.get();
+            } else {
+                error = true;
+                errorMessage = "Member not found";
+            }
+        }
+
+        if (!error) {
+            try {
+                membersRepository.delete(member);
+            } catch (Exception e) {
+                error = true;
+                errorMessage = ErrorsUtils.getErrorMessage(e);
+            }
+        }
+        if (!error) {
+            result = new ResponseEntity<Member>(member, HttpStatus.OK);
+        } else {
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+
+
 
 }

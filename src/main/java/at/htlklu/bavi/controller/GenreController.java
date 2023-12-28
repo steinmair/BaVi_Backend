@@ -1,113 +1,203 @@
 package at.htlklu.bavi.controller;
 
-import at.htlklu.bavi.Assembler.GenreModelAssembler;
-import at.htlklu.bavi.Assembler.MemberModelAssembler;
+import at.htlklu.bavi.api.ErrorsUtils;
+import at.htlklu.bavi.api.LogUtils;
 import at.htlklu.bavi.model.Genre;
-import at.htlklu.bavi.model.Member;
 import at.htlklu.bavi.repository.GenresRepository;
-import at.htlklu.bavi.repository.MembersRepository;
+import at.htlklu.bavi.repository.SongsRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.webjars.NotFoundException;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
-@RequestMapping("/genres")
+@RequestMapping("genres")
 public class GenreController {
 
-    //https://spring.io/guides/tutorials/rest/
+    private static Logger logger = LogManager.getLogger(SongController.class);
+    private static final String CLASS_NAME = "GenreController";
+
+    @Autowired
+    GenresRepository genresRepository;
+    @Autowired
+    SongsRepository songsRepository;
+
 
     //http://localhost:8082/genres
-    private final GenresRepository genresRepository;
-    private final GenreModelAssembler genreModelAssembler;
-
-    private static final Logger logger = LogManager.getLogger(GenreController.class);
-
-
-    public GenreController(GenresRepository genresRepository, GenreModelAssembler genreModelAssembler) {
-        this.genresRepository = genresRepository;
-        this.genreModelAssembler = genreModelAssembler;
-    }
-
     @GetMapping("")
-    public CollectionModel<EntityModel<Genre>> all() {
+    public ResponseEntity<?> getAllGenres() {
+        logger.info(LogUtils.info(CLASS_NAME, "getAllGenres", "Retrieving all genres"));
 
-        logger.info("/genres all Method called");
+        ResponseEntity<?> result;
+        try {
+            List<Genre> genres = genresRepository.findAll();
+            if (!genres.isEmpty()) {
+                result = new ResponseEntity<>(genres, HttpStatus.OK);
+            } else {
+                result = new ResponseEntity<>("No genres found", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return result;
+    }
+    //http://localhost:8082/genres/id
+    @GetMapping(value = "{genreId}")
+    public ResponseEntity<?> getByIdPV(@PathVariable Integer genreId){
+        logger.info(LogUtils.info(CLASS_NAME,"getByIdPV",String.format("(%d)", genreId)));
 
+        ResponseEntity<?> result;
+        Optional<Genre> optionalGenre = genresRepository.findById(genreId);
+        if (optionalGenre.isPresent()){
 
-        List<EntityModel<Genre>> genres = genresRepository.findAll().stream() //
-                .map(genreModelAssembler::toModel) //
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(genres, linkTo(methodOn(GenreController.class).all()).withSelfRel());
+            Genre genre = optionalGenre.get();
+            result =  new ResponseEntity<Genre>(genre, HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Genre mit der Id = %d nicht vorhanden", genreId),HttpStatus.NOT_FOUND);
+        }
+        return result;
     }
 
-    @PostMapping("")
-    ResponseEntity<?> newGenre(@RequestBody Genre newGenre) {
+    //http://localhost:8082/genres/id/songs
 
-        logger.info("/genres newGenre Method called");
+    @GetMapping(value = "{genreId}/songs")
+    public ResponseEntity<?> getSongsByIdPV(@PathVariable Integer genreId){
 
-        EntityModel<Genre> entityModel = genreModelAssembler.toModel(genresRepository.save(newGenre));
+        logger.info(LogUtils.info(CLASS_NAME,"getSongsByIdPV",String.format("(%d)", genreId)));
 
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
-    }
+        ResponseEntity<?> result;
+        Optional<Genre> optionalGenre = genresRepository.findById(genreId);
+        if (optionalGenre.isPresent()){
 
-    //Single Song
-    @GetMapping("/{id}")
-    public EntityModel<Genre> one(@PathVariable Integer id){
-
-        logger.info("/genres/{id} one Method called");
-
-        Genre genre = genresRepository.findById(id).orElseThrow(() -> new NotFoundException("Genre (" + id + ") not found"));
-
-        return genreModelAssembler.toModel(genre);
-    }
-
-    @PutMapping("/{id}")
-    ResponseEntity<?> replaceGenre(@RequestBody Genre newGenre, @PathVariable Integer id){
-
-        logger.info("/genres/{id} replaceGenre Method called");
-
-
-        Genre updatedGenre = genresRepository.findById(id) //
-                .map(genre -> {
-                    genre.setName(genre.getName());
-                    genre.setCreatedBy(genre.getCreatedBy());
-                    return genresRepository.save(genre);
-                }) //
-                .orElseGet(() -> {
-                    newGenre.setGenreId(id);
-                    return genresRepository.save(newGenre);
-                });
-
-        EntityModel<Genre> entityModel = genreModelAssembler.toModel(updatedGenre);
-
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
+            Genre genre = optionalGenre.get();
+            result =  new ResponseEntity<>(genre.getSongs(), HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Genre mit der Id = %d nicht vorhanden", genreId),HttpStatus.NOT_FOUND);
+        }
+        return result;
 
     }
+    // einfügen einer neuen Ressource
+    @PostMapping(value = "")
+    public ResponseEntity<?> add(@Valid @RequestBody Genre genre,
+                                 BindingResult bindingResult) {
 
-    @DeleteMapping("/{id}")
-    ResponseEntity<?> deleteGenre(@PathVariable Integer id) {
+        logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", genre)));
 
-        logger.info("/genres/{id} deleteGenre Method called");
+        boolean error = false;
+        String errorMessage = "";
 
-        genresRepository.deleteById(id);
+        if (!error) {
+            error = bindingResult.hasErrors();
+            errorMessage = bindingResult.toString();
+        }
 
-        return ResponseEntity.noContent().build();
+        if (!error) {
+            try {
+                genresRepository.save(genre);
+            } catch (Exception e) {
+                e.printStackTrace();
+                error = true;
+                errorMessage = e.getCause().getCause().getLocalizedMessage();
+            }
+        }
+
+        ResponseEntity<?> result;
+        if (!error) {
+            result = new ResponseEntity<Genre>(genre, HttpStatus.OK);
+
+        } else {
+            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+
     }
+
+    // ändern einer vorhandenen Ressource
+    @PutMapping(value = "")
+    public ResponseEntity<?> update(@Valid @RequestBody Genre genre,
+                                    BindingResult bindingResult) {
+
+        logger.info(LogUtils.info(CLASS_NAME, "update", String.format("(%s)", genre)));
+
+        boolean error = false;
+        String errorMessage = "";
+
+        if (!error) {
+            error = bindingResult.hasErrors();
+            errorMessage = bindingResult.toString();
+        }
+        if (!error) {
+            try {
+                genresRepository.save(genre);
+            } catch (Exception e) {
+                e.printStackTrace();
+                error = true;
+                errorMessage = e.getCause().getCause().getLocalizedMessage();
+            }
+        }
+        ResponseEntity<?> result;
+        if (!error) {
+            result = new ResponseEntity<Genre>(genre, HttpStatus.OK);
+
+        } else {
+            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+
+    //http://localhost:8082/genres/id (delete)
+    @DeleteMapping(value = "{genreId}")
+    public ResponseEntity<?> deletePV(@PathVariable Integer genreId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", genreId)));
+        boolean error = false;
+        String errorMessage = "";
+        ResponseEntity<?> result;
+        Genre genre = null;
+
+
+        if (!error) {
+            Optional<Genre> optionalGenre = genresRepository.findById(genreId);
+            if (optionalGenre.isPresent()) {
+                genre = optionalGenre.get();
+            } else {
+                error = true;
+                errorMessage = "Genre not found";
+            }
+        }
+
+        if (!error) {
+            try {
+                genresRepository.delete(genre);
+            } catch (Exception e) {
+                error = true;
+                errorMessage = ErrorsUtils.getErrorMessage(e);
+            }
+        }
+        if (!error) {
+            result = new ResponseEntity<Genre>(genre, HttpStatus.OK);
+        } else {
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+
+
 
 }

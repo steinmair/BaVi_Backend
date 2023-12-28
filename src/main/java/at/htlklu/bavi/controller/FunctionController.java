@@ -1,109 +1,203 @@
 package at.htlklu.bavi.controller;
 
-import at.htlklu.bavi.Assembler.FunctionModelAssembler;
-import at.htlklu.bavi.Assembler.MemberModelAssembler;
+import at.htlklu.bavi.api.ErrorsUtils;
+import at.htlklu.bavi.api.LogUtils;
 import at.htlklu.bavi.model.Function;
-import at.htlklu.bavi.model.Member;
 import at.htlklu.bavi.repository.FunctionsRepository;
 import at.htlklu.bavi.repository.MembersRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.webjars.NotFoundException;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
-@RequestMapping("/functions")
+@RequestMapping("functions")
 public class FunctionController {
 
-    //https://spring.io/guides/tutorials/rest/
-    private final FunctionsRepository functionsRepository;
-    private final FunctionModelAssembler functionModelAssembler;
+    private static Logger logger = LogManager.getLogger(SongController.class);
+    private static final String CLASS_NAME = "GenreController";
 
-    private static final Logger logger = LogManager.getLogger(FunctionController.class);
+    @Autowired
+    FunctionsRepository functionsRepository;
+    @Autowired
+    MembersRepository membersRepository;
 
-    public FunctionController(FunctionsRepository functionsRepository, FunctionModelAssembler functionModelAssembler) {
-        this.functionsRepository = functionsRepository;
-        this.functionModelAssembler = functionModelAssembler;
-    }
 
+    //http://localhost:8082/functions
     @GetMapping("")
-    public CollectionModel<EntityModel<Function>> all() {
+    public ResponseEntity<?> getAllFunctions() {
+        logger.info(LogUtils.info(CLASS_NAME, "getAllFunctions", "Retrieving all instruments"));
 
-        logger.info("/functions all Method called");
+        ResponseEntity<?> result;
+        try {
+            List<Function> functions = functionsRepository.findAll();
+            if (!functions.isEmpty()) {
+                result = new ResponseEntity<>(functions, HttpStatus.OK);
+            } else {
+                result = new ResponseEntity<>("No functions found", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return result;
+    }
+    //http://localhost:8082/functions/id
+    @GetMapping(value = "{functionId}")
+    public ResponseEntity<?> getByIdPV(@PathVariable Integer functionId){
+        logger.info(LogUtils.info(CLASS_NAME,"getByIdPV",String.format("(%d)", functionId)));
 
-        List<EntityModel<Function>> functions = functionsRepository.findAll().stream() //
-                .map(functionModelAssembler::toModel) //
-                .collect(Collectors.toList());
+        ResponseEntity<?> result;
+        Optional<Function> optionalFunction = functionsRepository.findById(functionId);
+        if (optionalFunction.isPresent()){
 
-        return CollectionModel.of(functions, linkTo(methodOn(FunctionController.class).all()).withSelfRel());
+            Function function= optionalFunction.get();
+            result =  new ResponseEntity<Function>(function, HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Function mit der Id = %d nicht vorhanden", functionId),HttpStatus.NOT_FOUND);
+        }
+        return result;
     }
 
-    @PostMapping("")
-    ResponseEntity<?> newFunction(@RequestBody Function newFunction) {
+    //http://localhost:8082/functions/id/members
 
-        logger.info("/functions newFunction Method called");
+    @GetMapping(value = "{functionId}/members")
+    public ResponseEntity<?> getInstrumentsByIdPV(@PathVariable Integer functionId){
 
-        EntityModel<Function> entityModel = functionModelAssembler.toModel(functionsRepository.save(newFunction));
+        logger.info(LogUtils.info(CLASS_NAME,"getMembersByIdPV",String.format("(%d)", functionId)));
 
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
-    }
+        ResponseEntity<?> result;
+        Optional<Function> optionalFunction = functionsRepository.findById(functionId);
+        if (optionalFunction.isPresent()){
 
-    //Single Song
-    @GetMapping("/{id}")
-    public EntityModel<Function> one(@PathVariable Integer id){
-
-        logger.info("/functions/{id} one Method called");
-
-        Function function = functionsRepository.findById(id).orElseThrow(() -> new NotFoundException("Function ("+id + ")not found"));
-
-        return functionModelAssembler.toModel(function);
-    }
-
-    @PutMapping("/{id}")
-    ResponseEntity<?> replaceFunction(@RequestBody Function newFunction, @PathVariable Integer id){
-
-        logger.info("/functions/{id} replaceFunciton Method called");
-
-        Function updatedFunction = functionsRepository.findById(id) //
-                .map(function -> {
-                    function.setName(function.getName());
-                    function.setCreatedBy(function.getCreatedBy());
-                    return functionsRepository.save(function);
-                }) //
-                .orElseGet(() -> {
-                    newFunction.setFunctionId(id);
-                    return functionsRepository.save(newFunction);
-                });
-
-
-        EntityModel<Function> entityModel = functionModelAssembler.toModel(updatedFunction);
-
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
+            Function function = optionalFunction.get();
+            result =  new ResponseEntity<>(function.getMembers(), HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Function mit der Id = %d nicht vorhanden", functionId),HttpStatus.NOT_FOUND);
+        }
+        return result;
 
     }
+    // einfügen einer neuen Ressource
+    @PostMapping(value = "")
+    public ResponseEntity<?> add(@Valid @RequestBody Function function,
+                                 BindingResult bindingResult) {
 
-    @DeleteMapping("/{id}")
-    ResponseEntity<?> deleteFunction(@PathVariable Integer id) {
+        logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", function)));
 
-        logger.info("/functions/{id} deleteFunciton Method called");
+        boolean error = false;
+        String errorMessage = "";
 
-        functionsRepository.deleteById(id);
+        if (!error) {
+            error = bindingResult.hasErrors();
+            errorMessage = bindingResult.toString();
+        }
 
-        return ResponseEntity.noContent().build();
+        if (!error) {
+            try {
+                functionsRepository.save(function);
+            } catch (Exception e) {
+                e.printStackTrace();
+                error = true;
+                errorMessage = e.getCause().getCause().getLocalizedMessage();
+            }
+        }
+
+        ResponseEntity<?> result;
+        if (!error) {
+            result = new ResponseEntity<Function>(function, HttpStatus.OK);
+
+        } else {
+            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+
     }
+
+    // ändern einer vorhandenen Ressource
+    @PutMapping(value = "")
+    public ResponseEntity<?> update(@Valid @RequestBody Function function,
+                                    BindingResult bindingResult) {
+
+        logger.info(LogUtils.info(CLASS_NAME, "update", String.format("(%s)", function)));
+
+        boolean error = false;
+        String errorMessage = "";
+
+        if (!error) {
+            error = bindingResult.hasErrors();
+            errorMessage = bindingResult.toString();
+        }
+        if (!error) {
+            try {
+                functionsRepository.save(function);
+            } catch (Exception e) {
+                e.printStackTrace();
+                error = true;
+                errorMessage = e.getCause().getCause().getLocalizedMessage();
+            }
+        }
+        ResponseEntity<?> result;
+        if (!error) {
+            result = new ResponseEntity<Function>(function, HttpStatus.OK);
+
+        } else {
+            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+
+    //http://localhost:8082/functions/id (delete)
+    @DeleteMapping(value = "{functionId}")
+    public ResponseEntity<?> deletePV(@PathVariable Integer functionId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", functionId)));
+        boolean error = false;
+        String errorMessage = "";
+        ResponseEntity<?> result;
+        Function function = null;
+
+
+        if (!error) {
+            Optional<Function> optionalFunction = functionsRepository.findById(functionId);
+            if (optionalFunction.isPresent()) {
+                function = optionalFunction.get();
+            } else {
+                error = true;
+                errorMessage = "Instrument not found";
+            }
+        }
+
+        if (!error) {
+            try {
+                functionsRepository.delete(function);
+            } catch (Exception e) {
+                error = true;
+                errorMessage = ErrorsUtils.getErrorMessage(e);
+            }
+        }
+        if (!error) {
+            result = new ResponseEntity<Function>(function, HttpStatus.OK);
+        } else {
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+
+
 
 }

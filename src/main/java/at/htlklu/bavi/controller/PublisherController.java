@@ -1,106 +1,203 @@
 package at.htlklu.bavi.controller;
 
-import at.htlklu.bavi.Assembler.PublisherModelAssembler;
+import at.htlklu.bavi.api.ErrorsUtils;
+import at.htlklu.bavi.api.LogUtils;
 import at.htlklu.bavi.model.Publisher;
-import at.htlklu.bavi.model.Song;
 import at.htlklu.bavi.repository.PublishersRepository;
+import at.htlklu.bavi.repository.SongsRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.webjars.NotFoundException;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
-@RequestMapping("/publishers")
+@RequestMapping("publishers")
 public class PublisherController {
 
-    //https://spring.io/guides/tutorials/rest/
-    private final PublishersRepository publishersRepository;
-    private final PublisherModelAssembler publisherModelAssembler;
-    private static final Logger logger = LogManager.getLogger(PublisherController.class);
+    private static Logger logger = LogManager.getLogger(SongController.class);
+    private static final String CLASS_NAME = "GenreController";
 
-    public PublisherController(PublishersRepository publishersRepository, PublisherModelAssembler publisherModelAssembler) {
-        this.publishersRepository = publishersRepository;
-        this.publisherModelAssembler = publisherModelAssembler;
-    }
+    @Autowired
+    PublishersRepository publishersRepository;
+    @Autowired
+    SongsRepository songsRepository;
 
+
+    //http://localhost:8082/publishers
     @GetMapping("")
-    public CollectionModel<EntityModel<Publisher>> all() {
+    public ResponseEntity<?> getAllPublishers() {
+        logger.info(LogUtils.info(CLASS_NAME, "getAllPublishers", "Retrieving all publishers"));
 
-        logger.info("/publishers all Method called");
+        ResponseEntity<?> result;
+        try {
+            List<Publisher> publisher = publishersRepository.findAll();
+            if (!publisher.isEmpty()) {
+                result = new ResponseEntity<>(publisher, HttpStatus.OK);
+            } else {
+                result = new ResponseEntity<>("No publishers found", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return result;
+    }
+    //http://localhost:8082/publishers/id
+    @GetMapping(value = "{publisherId}")
+    public ResponseEntity<?> getByIdPV(@PathVariable Integer publisherId){
+        logger.info(LogUtils.info(CLASS_NAME,"getByIdPV",String.format("(%d)", publisherId)));
 
-        List<EntityModel<Publisher>> publishers = publishersRepository.findAll().stream() //
-                .map(publisherModelAssembler::toModel) //
-                .collect(Collectors.toList());
+        ResponseEntity<?> result;
+        Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
+        if (optionalPublisher.isPresent()){
 
-        return CollectionModel.of(publishers, linkTo(methodOn(PublisherController.class).all()).withSelfRel());
+            Publisher publisher= optionalPublisher.get();
+            result =  new ResponseEntity<Publisher>(publisher, HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Publisher mit der Id = %d nicht vorhanden", publisherId),HttpStatus.NOT_FOUND);
+        }
+        return result;
     }
 
-    @PostMapping("")
-    ResponseEntity<?> newPublisher(@RequestBody Publisher newPublisher) {
+    //http://localhost:8082/publishers/id/songs
 
-        logger.info("/publishers newPublisher Method called");
+    @GetMapping(value = "{publisherId}/songs")
+    public ResponseEntity<?> getSongsByIdPV(@PathVariable Integer publisherId){
 
-        EntityModel<Publisher> entityModel = publisherModelAssembler.toModel(publishersRepository.save(newPublisher));
+        logger.info(LogUtils.info(CLASS_NAME,"getSongsByIdPV",String.format("(%d)", publisherId)));
 
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
-    }
+        ResponseEntity<?> result;
+        Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
+        if (optionalPublisher.isPresent()){
 
-    //Single Song
-    @GetMapping("/{id}")
-    public EntityModel<Publisher> one(@PathVariable Integer id){
-
-        logger.info("/publishers/{id} one Method called");
-
-        Publisher publisher = publishersRepository.findById(id).orElseThrow(() -> new NotFoundException("Publisher (" + id + ")not found"));
-
-        return publisherModelAssembler.toModel(publisher);
-    }
-
-    @PutMapping("/{id}")
-    ResponseEntity<?> replacePublisher(@RequestBody Publisher newPublisher, @PathVariable Integer id){
-
-
-        logger.info("/publishers/{id} replacePublisher Method called");
-
-        Publisher updatedPublisher = publishersRepository.findById(id) //
-                .map(publisher -> {
-                    publisher.setName(newPublisher.getName());
-                    publisher.setCreatedBy(newPublisher.getCreatedBy());
-                    return publishersRepository.save(publisher);
-                }) //
-                .orElseGet(() -> {
-                    newPublisher.setPublisherId(id);
-                    return publishersRepository.save(newPublisher);
-                });
-
-        EntityModel<Publisher> entityModel = publisherModelAssembler.toModel(updatedPublisher);
-
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
+            Publisher publisher = optionalPublisher.get();
+            result =  new ResponseEntity<>(publisher.getSongs(), HttpStatus.OK);
+        }else{
+            result = new ResponseEntity<>(String.format("Publisher mit der Id = %d nicht vorhanden", publisherId),HttpStatus.NOT_FOUND);
+        }
+        return result;
 
     }
+    // einfügen einer neuen Ressource
+    @PostMapping(value = "")
+    public ResponseEntity<?> add(@Valid @RequestBody Publisher publisher,
+                                 BindingResult bindingResult) {
 
-    @DeleteMapping("/{id}")
-    ResponseEntity<?> deletePublisher(@PathVariable Integer id) {
+        logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", publisher)));
 
-        logger.info("/publishers/{id} deletePublisher Method called");
+        boolean error = false;
+        String errorMessage = "";
 
-        publishersRepository.deleteById(id);
+        if (!error) {
+            error = bindingResult.hasErrors();
+            errorMessage = bindingResult.toString();
+        }
 
-        return ResponseEntity.noContent().build();
+        if (!error) {
+            try {
+                publishersRepository.save(publisher);
+            } catch (Exception e) {
+                e.printStackTrace();
+                error = true;
+                errorMessage = e.getCause().getCause().getLocalizedMessage();
+            }
+        }
+
+        ResponseEntity<?> result;
+        if (!error) {
+            result = new ResponseEntity<Publisher>(publisher, HttpStatus.OK);
+
+        } else {
+            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+
     }
+
+    // ändern einer vorhandenen Ressource
+    @PutMapping(value = "")
+    public ResponseEntity<?> update(@Valid @RequestBody Publisher publisher,
+                                    BindingResult bindingResult) {
+
+        logger.info(LogUtils.info(CLASS_NAME, "update", String.format("(%s)", publisher)));
+
+        boolean error = false;
+        String errorMessage = "";
+
+        if (!error) {
+            error = bindingResult.hasErrors();
+            errorMessage = bindingResult.toString();
+        }
+        if (!error) {
+            try {
+                publishersRepository.save(publisher);
+            } catch (Exception e) {
+                e.printStackTrace();
+                error = true;
+                errorMessage = e.getCause().getCause().getLocalizedMessage();
+            }
+        }
+        ResponseEntity<?> result;
+        if (!error) {
+            result = new ResponseEntity<Publisher>(publisher, HttpStatus.OK);
+
+        } else {
+            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+
+    //http://localhost:8082/publishers/id (delete)
+    @DeleteMapping(value = "{publisherId}")
+    public ResponseEntity<?> deletePV(@PathVariable Integer publisherId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", publisherId)));
+        boolean error = false;
+        String errorMessage = "";
+        ResponseEntity<?> result;
+        Publisher publisher = null;
+
+
+        if (!error) {
+            Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
+            if (optionalPublisher.isPresent()) {
+                publisher = optionalPublisher.get();
+            } else {
+                error = true;
+                errorMessage = "Publisher not found";
+            }
+        }
+
+        if (!error) {
+            try {
+                publishersRepository.delete(publisher);
+            } catch (Exception e) {
+                error = true;
+                errorMessage = ErrorsUtils.getErrorMessage(e);
+            }
+        }
+        if (!error) {
+            result = new ResponseEntity<Publisher>(publisher, HttpStatus.OK);
+        } else {
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+
+
 
 }

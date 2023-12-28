@@ -23,7 +23,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @RequestMapping("composers")
 public class ComposerController {
 
-    private static Logger logger = LogManager.getLogger(ComposerController.class);
+    private static Logger logger = LogManager.getLogger(SongController.class);
     private static final String CLASS_NAME = "ComposerController";
 
     @Autowired
