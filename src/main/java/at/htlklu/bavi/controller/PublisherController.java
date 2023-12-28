@@ -24,7 +24,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 public class PublisherController {
 
     private static Logger logger = LogManager.getLogger(SongController.class);
-    private static final String CLASS_NAME = "GenreController";
+    private static final String CLASS_NAME = "PublisherController";
 
     @Autowired
     PublishersRepository publishersRepository;

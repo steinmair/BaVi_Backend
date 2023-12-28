@@ -23,7 +23,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 public class SongController {
 
     private static Logger logger = LogManager.getLogger(SongController.class);
-    private static final String CLASS_NAME = "GenreController";
+    private static final String CLASS_NAME = "SongController";
 
     @Autowired
     SongsRepository songsRepository;
