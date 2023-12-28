@@ -4,6 +4,7 @@ import at.htlklu.bavi.api.ErrorsUtils;
 import at.htlklu.bavi.api.LogUtils;
 import at.htlklu.bavi.model.Composer;
 import at.htlklu.bavi.repository.ComposersRepository;
+import at.htlklu.bavi.repository.SongsRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +24,15 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 public class ComposerController {
 
     private static Logger logger = LogManager.getLogger(ComposerController.class);
-    private static final String CLASS_NAME = "ComposerId";
+    private static final String CLASS_NAME = "ComposerController";
 
     @Autowired
     ComposersRepository composersRepository ;
-    
-    //region GET
+    @Autowired
+    SongsRepository songsRepository;
 
+
+    //http://localhost:8082/composers
     @GetMapping("")
     public ResponseEntity<?> getAllComposers() {
         logger.info(LogUtils.info(CLASS_NAME, "getAllComposers", "Retrieving all composers"));
@@ -49,7 +52,7 @@ public class ComposerController {
         }
         return result;
     }
-    //http://localhost:8082/teachers/id
+    //http://localhost:8082/composers/id
     @GetMapping(value = "{composerId}")
     public ResponseEntity<?> getByIdPV(@PathVariable Integer composerId){
         logger.info(LogUtils.info(CLASS_NAME,"getByIdPV",String.format("(%d)",composerId)));
@@ -66,25 +69,25 @@ public class ComposerController {
         return result;
     }
 
-    //http://localhost:8082/teachers/id/schoolClasses
+    //http://localhost:8082/composers/id/songs
 
-    /*@GetMapping(value = "{teacherId}/schoolClasses")
-    public ResponseEntity<?> getSchoolClassesByIdPV(@PathVariable Integer teacherId){
+    @GetMapping(value = "{composerId}/songs")
+    public ResponseEntity<?> getSongsByIdPV(@PathVariable Integer composerId){
 
-        logger.info(LogUtils.info(CLASS_NAME,"getSchoolClassesByIdPV",String.format("(%d)",teacherId)));
+        logger.info(LogUtils.info(CLASS_NAME,"getSongsByIdPV",String.format("(%d)",composerId)));
 
         ResponseEntity<?> result;
-        Optional<Teacher> optTeacher = teacherRepository.findById(teacherId);
-        if (optTeacher.isPresent()){
+        Optional<Composer> optionalComposer = composersRepository.findById(composerId);
+        if (optionalComposer.isPresent()){
 
-            Teacher teacher = optTeacher.get();
-            result =  new ResponseEntity<>(teacher.getSchoolClasses(), HttpStatus.OK);
+            Composer composer = optionalComposer.get();
+            result =  new ResponseEntity<>(composer.getSongs(), HttpStatus.OK);
         }else{
-            result = new ResponseEntity<>(String.format("Lehrer/in mit der Id = %d nicht vorhanden",teacherId),HttpStatus.NOT_FOUND);
+            result = new ResponseEntity<>(String.format("Song mit der Id = %d nicht vorhanden",composerId),HttpStatus.NOT_FOUND);
         }
         return result;
 
-    }*/
+    }
     // einfügen einer neuen Ressource
     @PostMapping(value = "")
     public ResponseEntity<?> add(@Valid @RequestBody Composer composer,
@@ -157,10 +160,10 @@ public class ComposerController {
     }
 
 
-    //http://localhost:8082/teachers/id (delete)
+    //http://localhost:8082/composers/id (delete)
     @DeleteMapping(value = "{composerId}")
     public ResponseEntity<?> deletePV(@PathVariable Integer composerId) {
-        logger.info(LogUtils.info(CLASS_NAME, "deletePV2", String.format("(%d)", composerId)));
+        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", composerId)));
         boolean error = false;
         String errorMessage = "";
         ResponseEntity<?> result;
@@ -173,7 +176,7 @@ public class ComposerController {
                 composer = optionalComposer.get();
             } else {
                 error = true;
-                errorMessage = "Teacher not found";
+                errorMessage = "Composer not found";
             }
         }
 
@@ -194,7 +197,7 @@ public class ComposerController {
         return result;
     }
 
-    //endregion
+
 
 
 }
