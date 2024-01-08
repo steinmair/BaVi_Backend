@@ -29,13 +29,6 @@
 	</pluginRepositories>
 	
 	<dependencies>
-		<!-- Minio -->
-		<dependency>
-			<groupId>io.minio</groupId>
-			<artifactId>minio</artifactId>
-			<version>8.4.3</version>
-		</dependency>
-
 	  	<dependency>
 	    	<groupId>org.springframework.boot</groupId>
 	    	<artifactId>spring-boot-starter-web</artifactId>
@@ -58,34 +51,7 @@
 		    <groupId>org.springframework.boot</groupId> 
 		    <artifactId>spring-boot-starter-validation</artifactId> 
 		</dependency>
-		<!-- swagger -->
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-boot-starter</artifactId>
-			<version>3.0.0</version> <!-- Use the latest version -->
-		</dependency>
-
-
-			<!-- Springfox Swagger2 for generating API documentation -->
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
-			<version>3.0.0</version> <!-- Verwende hier die neueste Version -->
-		</dependency>
-
-			<!-- Swagger UI for displaying API documentation -->
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger-ui</artifactId>
-			<version>3.0.0</version> <!-- Verwende hier die neueste Version -->
-		</dependency>
-
-
+		
         <!-- exclude logback , add log4j2 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
