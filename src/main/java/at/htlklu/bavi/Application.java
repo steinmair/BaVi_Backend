@@ -22,6 +22,7 @@ public class Application
 		SpringApplication.run(Application.class, args);
 
 	}
+	//http://localhost:8082/swagger-ui/#/
 	@Bean
 	public Docket api() {
 		return new Docket(DocumentationType.SWAGGER_2).select()
