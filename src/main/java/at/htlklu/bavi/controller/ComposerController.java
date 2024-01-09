@@ -65,7 +65,7 @@ public class ComposerController {
         if (optComposer.isPresent()){
             Composer composer = optComposer.get();
             addLinks(composer);
-            result =  new ResponseEntity<Composer>(composer, HttpStatus.OK);
+            result =  new ResponseEntity<>(composer, HttpStatus.OK);
         }else{
             result = new ResponseEntity<>(String.format("Composer mit der Id = %d nicht vorhanden",composerId),HttpStatus.NOT_FOUND);
         }
@@ -210,16 +210,7 @@ public class ComposerController {
         }
     }
 
-    public static void addLinks(Composer composer){
-        if (HateoasUtils.enableHateoas){
-            composer.add(WebMvcLinkBuilder.linkTo(methodOn(ComposerController.class)
-                            .getByIdPV(composer.getComposerId()))
-                            .withSelfRel());
-            composer.add(WebMvcLinkBuilder.linkTo(methodOn(ComposerController.class)
-                            .getSongsByIdPV(composer.getComposerId()))
-                            .withRel("songs"));
-        }
-    }
+
 
 
 
