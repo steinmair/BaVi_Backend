@@ -29,3 +29,6 @@ public class Application
 				.apis(RequestHandlerSelectors.basePackage("at.htlklu.bavi.controller")).build();
 	}
 }
+
+//https://github.com/NrktSLL/spring-boot-minio/tree/master
+//https://github.com/Rapter1990/SpringBootMinio
