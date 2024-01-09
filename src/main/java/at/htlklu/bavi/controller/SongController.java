@@ -2,6 +2,7 @@ package at.htlklu.bavi.controller;
 
 import at.htlklu.bavi.api.ErrorsUtils;
 import at.htlklu.bavi.api.LogUtils;
+import at.htlklu.bavi.configs.MinioFileService;
 import at.htlklu.bavi.model.Song;
 import at.htlklu.bavi.repository.SongsRepository;
 import org.apache.logging.log4j.LogManager;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -27,6 +29,8 @@ public class SongController {
 
     @Autowired
     SongsRepository songsRepository;
+    @Autowired
+    private MinioFileService minioFileService;
 
 
     //http://localhost:8082/songs
@@ -69,12 +73,30 @@ public class SongController {
     // einfügen einer neuen Ressource
     @PostMapping(value = "")
     public ResponseEntity<?> add(@Valid @RequestBody Song song,
-                                 BindingResult bindingResult) {
+                                 BindingResult bindingResult,
+     @RequestParam("file") MultipartFile file) {
+
 
         logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", song)));
 
         boolean error = false;
         String errorMessage = "";
+
+            // Prüfen der übergebenen Datei
+            if (file == null || file.isEmpty()) {
+                return new ResponseEntity<>("No file uploaded", HttpStatus.BAD_REQUEST);
+            }
+
+            // Hochladen der Datei in MinIO
+            String uploadedFileName = minioFileService.uploadFile(file);
+
+            if (uploadedFileName != null) {
+                // Wenn die Datei erfolgreich hochgeladen wurde, speichern Sie die URL in der Song-Tabelle
+                song.setUrl("http://localhost:9000/buckets/songs/" + uploadedFileName);
+                // Anpassen der URL entsprechend Ihrer MinIO-Konfiguration
+            } else {
+                return new ResponseEntity<>("File upload failed", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
 
         if (!error) {
             error = bindingResult.hasErrors();
