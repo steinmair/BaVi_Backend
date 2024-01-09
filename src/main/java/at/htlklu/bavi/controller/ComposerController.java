@@ -67,7 +67,7 @@ public class ComposerController {
             addLinks(composer);
             result =  new ResponseEntity<Composer>(composer, HttpStatus.OK);
         }else{
-            result = new ResponseEntity<>(String.format("Lehrer/in mit der Id = %d nicht vorhanden",composerId),HttpStatus.NOT_FOUND);
+            result = new ResponseEntity<>(String.format("Composer mit der Id = %d nicht vorhanden",composerId),HttpStatus.NOT_FOUND);
         }
         return result;
     }
@@ -207,6 +207,17 @@ public class ComposerController {
             composer.add(WebMvcLinkBuilder.linkTo(methodOn(ComposerController.class)
                             .getSongsByIdPV(composer.getComposerId()))
                     .withRel("songs"));
+        }
+    }
+
+    public static void addLinks(Composer composer){
+        if (HateoasUtils.enableHateoas){
+            composer.add(WebMvcLinkBuilder.linkTo(methodOn(ComposerController.class)
+                            .getByIdPV(composer.getComposerId()))
+                            .withSelfRel());
+            composer.add(WebMvcLinkBuilder.linkTo(methodOn(ComposerController.class)
+                            .getSongsByIdPV(composer.getComposerId()))
+                            .withRel("songs"));
         }
     }
 
