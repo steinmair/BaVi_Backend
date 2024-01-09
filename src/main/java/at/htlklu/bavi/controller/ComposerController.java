@@ -1,6 +1,7 @@
 package at.htlklu.bavi.controller;
 
 import at.htlklu.bavi.api.ErrorsUtils;
+import at.htlklu.bavi.api.HateoasUtils;
 import at.htlklu.bavi.api.LogUtils;
 import at.htlklu.bavi.model.Composer;
 import at.htlklu.bavi.repository.ComposersRepository;
@@ -8,6 +9,7 @@ import at.htlklu.bavi.repository.SongsRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("composers")
@@ -60,8 +63,8 @@ public class ComposerController {
         ResponseEntity<?> result;
         Optional<Composer> optComposer = composersRepository.findById(composerId);
         if (optComposer.isPresent()){
-
             Composer composer = optComposer.get();
+            addLinks(composer);
             result =  new ResponseEntity<Composer>(composer, HttpStatus.OK);
         }else{
             result = new ResponseEntity<>(String.format("Lehrer/in mit der Id = %d nicht vorhanden",composerId),HttpStatus.NOT_FOUND);
@@ -195,6 +198,16 @@ public class ComposerController {
         }
 
         return result;
+    }
+    public static void addLinks(Composer composer){
+        if (HateoasUtils.enableHateoas){
+            composer.add(WebMvcLinkBuilder.linkTo(methodOn(ComposerController.class)
+                            .getByIdPV(composer.getComposerId()))
+                    .withSelfRel());
+            composer.add(WebMvcLinkBuilder.linkTo(methodOn(ComposerController.class)
+                            .getSongsByIdPV(composer.getComposerId()))
+                    .withRel("songs"));
+        }
     }
 
 
