@@ -2,9 +2,6 @@
 
 ## API Endpoints
 
-Endpoints for Song:
+###Swagger documentation
 
-- GET /songs/ - all songs
-- POST /songs/ - add a new song
-- PUT...
-- DELETE
+http://localhost:8082/swagger-ui/#/
