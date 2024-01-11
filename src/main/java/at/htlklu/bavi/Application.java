@@ -22,9 +22,13 @@ public class Application
 		SpringApplication.run(Application.class, args);
 
 	}
+	//http://localhost:8082/swagger-ui/#/
 	@Bean
 	public Docket api() {
 		return new Docket(DocumentationType.SWAGGER_2).select()
 				.apis(RequestHandlerSelectors.basePackage("at.htlklu.bavi.controller")).build();
 	}
 }
+
+//https://github.com/NrktSLL/spring-boot-minio/tree/master
+//https://github.com/Rapter1990/SpringBootMinio
