@@ -66,7 +66,7 @@ public class ComposerController {
         Optional<Composer> optComposer = composersRepository.findById(composerId);
         if (optComposer.isPresent()){
             Composer composer = optComposer.get();
-            addLinks(composer);
+           // addLinks(composer);
             result =  new ResponseEntity<>(composer, HttpStatus.OK);
         }else{
             result = new ResponseEntity<>(String.format("Composer mit der Id = %d nicht vorhanden",composerId),HttpStatus.NOT_FOUND);

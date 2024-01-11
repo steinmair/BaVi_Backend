@@ -3,11 +3,15 @@ package at.htlklu.bavi.controller;
 import at.htlklu.bavi.api.ErrorsUtils;
 import at.htlklu.bavi.api.LogUtils;
 import at.htlklu.bavi.configs.MinioFileService;
+import at.htlklu.bavi.minio.MinioService;
+import at.htlklu.bavi.minio.MinioServiceException;
 import at.htlklu.bavi.model.Song;
+import at.htlklu.bavi.repository.ComposersRepository;
 import at.htlklu.bavi.repository.SongsRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -30,7 +34,7 @@ public class SongController {
     @Autowired
     SongsRepository songsRepository;
     @Autowired
-    private MinioFileService minioFileService;
+    private MinioService minioService;
 
 
     //http://localhost:8082/songs
@@ -71,10 +75,9 @@ public class SongController {
     }
 
     // einfügen einer neuen Ressource
-    @PostMapping(value = "")
+   /* @PostMapping(value = "")
     public ResponseEntity<?> add(@Valid @RequestBody Song song,
-                                 BindingResult bindingResult,
-     @RequestParam("file") MultipartFile file) {
+                                 BindingResult bindingResult) {
 
 
         logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", song)));
@@ -82,21 +85,6 @@ public class SongController {
         boolean error = false;
         String errorMessage = "";
 
-            // Prüfen der übergebenen Datei
-            if (file == null || file.isEmpty()) {
-                return new ResponseEntity<>("No file uploaded", HttpStatus.BAD_REQUEST);
-            }
-
-            // Hochladen der Datei in MinIO
-            String uploadedFileName = minioFileService.uploadFile(file);
-
-            if (uploadedFileName != null) {
-                // Wenn die Datei erfolgreich hochgeladen wurde, speichern Sie die URL in der Song-Tabelle
-                song.setUrl("http://localhost:9000/buckets/songs/" + uploadedFileName);
-                // Anpassen der URL entsprechend Ihrer MinIO-Konfiguration
-            } else {
-                return new ResponseEntity<>("File upload failed", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
 
         if (!error) {
             error = bindingResult.hasErrors();
@@ -122,11 +110,73 @@ public class SongController {
         }
 
         return result;
+        }
+*/
 
+    @PostMapping(value = "")
+    public ResponseEntity<Object> add(@Valid @RequestBody Song song, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", song)));
+
+        if (bindingResult.hasErrors()) {
+            // Validation errors
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            // Attempt to save the song
+            Song savedSong = songsRepository.save(song);
+            return new ResponseEntity<>(savedSong, HttpStatus.CREATED);
+        } catch (Exception e) {
+            // Log the exception
+            logger.error("Error saving song", e);
+
+            // Handle specific exceptions if needed
+            if (e instanceof DataIntegrityViolationException) {
+                // Handle data integrity violations
+                return new ResponseEntity<>("Duplicate entry or data integrity violation", HttpStatus.CONFLICT);
+            }
+
+            // Generic error response
+            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+   /* @PostMapping(value = "")
+    public ResponseEntity<?> add(@Valid @RequestBody Song song, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", song)));
+
+        if (bindingResult.hasErrors()) {
+            // Validation errors
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            // Attempt to save the song
+            Song savedSong = songsRepository.save(song);
+
+            // Attempt to create a Minio bucket
+            minioService.createBucket(String.valueOf(savedSong.getSongId()));
+
+            // Bucket created successfully
+            return new ResponseEntity<>(savedSong, HttpStatus.CREATED);
+        } catch (Exception e) {
+            // Log the exception
+            logger.error("Error saving song", e);
+
+            // Handle specific exceptions if needed
+            if (e instanceof DataIntegrityViolationException) {
+                // Handle data integrity violations
+                return new ResponseEntity<>("Duplicate entry or data integrity violation", HttpStatus.CONFLICT);
+            }
+
+            // Generic error response
+            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }*/
+
+
 
     // ändern einer vorhandenen Ressource
-    @PutMapping(value = "")
+   /* @PutMapping(value = "")
     public ResponseEntity<?> update(@Valid @RequestBody Song song,
                                     BindingResult bindingResult) {
 
@@ -157,11 +207,39 @@ public class SongController {
         }
 
         return result;
+    }*/
+    @PutMapping(value = "")
+    public ResponseEntity<Object> update(@Valid @RequestBody Song song, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "update", String.format("(%s)", song)));
+
+        if (bindingResult.hasErrors()) {
+            // Validation errors
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            // Attempt to update the song
+            Song updatedSong = songsRepository.save(song);
+            return new ResponseEntity<>(updatedSong, HttpStatus.OK);
+        } catch (Exception e) {
+            // Log the exception
+            logger.error("Error updating song", e);
+
+            // Handle specific exceptions if needed
+            if (e instanceof DataIntegrityViolationException) {
+                // Handle data integrity violations
+                return new ResponseEntity<>("Duplicate entry or data integrity violation", HttpStatus.CONFLICT);
+            }
+
+            // Generic error response
+            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 
+
     //http://localhost:8082/songs/id (delete)
-    @DeleteMapping(value = "{songId}")
+    /*@DeleteMapping(value = "{songId}")
     public ResponseEntity<?> deletePV(@PathVariable Integer songId) {
         logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", songId)));
         boolean error = false;
@@ -196,6 +274,74 @@ public class SongController {
 
         return result;
     }
+    @DeleteMapping(value = "{songId}")
+    public ResponseEntity<Object> deletePV(@PathVariable Integer songId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", songId)));
+
+        try {
+            Optional<Song> songOptional = songsRepository.findById(songId);
+
+            if (songOptional.isPresent()) {
+                Song song = songOptional.get();
+                songsRepository.delete(song);
+                return new ResponseEntity<>(song, HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity<>("Song not found", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            // Log the exception
+            logger.error("Error deleting song", e);
+
+            // Handle specific exceptions if needed
+            if (e instanceof DataIntegrityViolationException) {
+                // Handle data integrity violations
+                return new ResponseEntity<>("Data integrity violation", HttpStatus.CONFLICT);
+            }
+
+            // Generic error response
+            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }*/
+    @DeleteMapping(value = "{songId}")
+    public ResponseEntity<Object> deletePV(@PathVariable Integer songId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", songId)));
+
+        try {
+            Optional<Song> songOptional = songsRepository.findById(songId);
+
+            if (songOptional.isPresent()) {
+                Song song = songOptional.get();
+
+                try {
+                    minioService.deleteBucket(String.valueOf(songId));
+                } catch (MinioServiceException e) {
+                    // Log the exception or perform additional actions
+                    logger.error("Error deleting Minio bucket: " + songId, e);
+                    return new ResponseEntity<>("Error deleting Minio bucket", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+
+                // Delete the song from the database
+                songsRepository.delete(song);
+                return new ResponseEntity<>(song, HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity<>("Song not found", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            // Log the exception
+            logger.error("Error deleting song", e);
+
+            // Handle specific exceptions if needed
+            if (e instanceof DataIntegrityViolationException) {
+                // Handle data integrity violations
+                return new ResponseEntity<>("Data integrity violation", HttpStatus.CONFLICT);
+            }
+
+            // Generic error response
+            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 
 
 
