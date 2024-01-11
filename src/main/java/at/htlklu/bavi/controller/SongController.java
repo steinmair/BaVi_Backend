@@ -270,7 +270,7 @@ public class SongController {
         }
 
         return result;
-    }
+    }*/
     @DeleteMapping(value = "{songId}")
     public ResponseEntity<Object> deletePV(@PathVariable Integer songId) {
         logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", songId)));
@@ -298,8 +298,8 @@ public class SongController {
             // Generic error response
             return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }*/
-    @DeleteMapping(value = "{songId}")
+    }
+    /*@DeleteMapping(value = "{songId}")
     public ResponseEntity<Object> deletePV(@PathVariable Integer songId) {
         logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", songId)));
 
@@ -336,7 +336,7 @@ public class SongController {
             // Generic error response
             return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
+    }*/
 
 
 
