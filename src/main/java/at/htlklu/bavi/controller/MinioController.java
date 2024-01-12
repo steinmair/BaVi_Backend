@@ -19,23 +19,23 @@ public class MinioController {
     @Autowired
     private MinioService minioService;
 
-    @PostMapping("/upload/{bucketName}")
-    public ResponseEntity<String> uploadFile(@PathVariable String bucketName, @RequestParam("file") MultipartFile file) {
+    @PostMapping("{title}/upload")
+    public ResponseEntity<String> uploadFile(@PathVariable String title, @RequestParam("file") MultipartFile file) {
         try {
-            minioService.uploadFile(bucketName, file.getOriginalFilename(), file.getInputStream(), file.getContentType());
+            minioService.uploadFile(title, file.getOriginalFilename(), file.getInputStream(), file.getContentType());
             return ResponseEntity.ok().body("File uploaded successfully");
         } catch (IOException e) {
             return ResponseEntity.badRequest().body("Failed to upload file");
         }
     }
 
-    @GetMapping("/download/{bucketName}/{objectName}")
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String bucketName, @PathVariable String objectName) {
+    @GetMapping("{title}/{file}/download")
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String title, @PathVariable String file) {
         try {
-            InputStreamResource resource = new InputStreamResource(minioService.downloadFile(bucketName, objectName));
+            InputStreamResource resource = new InputStreamResource(minioService.downloadFile(title, file));
             return ResponseEntity.ok()
                     .contentLength(resource.contentLength())
-                    .header("Content-Disposition", "attachment; filename=\"" + objectName + "\"")
+                    .header("Content-Disposition", "attachment; filename=\"" + file + "\"")
                     .body(resource);
         } catch (Exception e) {
             // Handle exceptions and return appropriate response
@@ -43,10 +43,10 @@ public class MinioController {
         }
     }
 
-    @GetMapping("/list/{bucketName}")
-    public ResponseEntity<List<String>> listFiles(@PathVariable String bucketName) {
+    @GetMapping("{title}/list")
+    public ResponseEntity<List<String>> listFiles(@PathVariable String title) {
         try {
-            List<String> objectNames = minioService.listFiles(bucketName);
+            List<String> objectNames = minioService.listFiles(title);
             return ResponseEntity.ok().body(objectNames);
         } catch (MinioServiceException e) {
             // Log the exception or perform any additional actions
@@ -55,21 +55,21 @@ public class MinioController {
     }
 
 
-    @DeleteMapping("/delete/{bucketName}/{objectName}")
-    public ResponseEntity<String> deleteFile(@PathVariable String bucketName, @PathVariable String objectName) {
+    @DeleteMapping("{title}/{file}/delete")
+    public ResponseEntity<String> deleteFile(@PathVariable String title, @PathVariable String file) {
         try {
-            minioService.deleteFile(bucketName, objectName);
-            return ResponseEntity.ok().body("File " + objectName + " deleted successfully");
+            minioService.deleteFile(title, file);
+            return ResponseEntity.ok().body("File " + file + " deleted successfully");
         } catch (Exception e) {
             // Handle exceptions and return appropriate response
             return ResponseEntity.status(500).body("Failed to delete file");
         }
     }
 
-    @PostMapping("/createBucket/{bucketName}")
-    public ResponseEntity<String> createBucket(@PathVariable String bucketName) {
+    @PostMapping("{title}/createBucket")
+    public ResponseEntity<String> createBucket(@PathVariable String title) {
         try {
-            minioService.createBucket(bucketName);
+            minioService.createBucket(title);
             return ResponseEntity.ok().body("Bucket created successfully");
         } catch (MinioServiceException e) {
             // Log the exception or perform any additional actions
@@ -77,10 +77,10 @@ public class MinioController {
         }
     }
 
-    @DeleteMapping("/deleteBucket/{bucketName}")
-    public ResponseEntity<String> deleteBucket(@PathVariable String bucketName) {
+    @DeleteMapping("{title}/deleteBucket")
+    public ResponseEntity<String> deleteBucket(@PathVariable String title) {
         try {
-            minioService.deleteBucket(bucketName);
+            minioService.deleteBucket(title);
             return ResponseEntity.ok().body("Bucket deleted successfully");
         } catch (MinioServiceException e) {
             // Log the exception or perform any additional actions

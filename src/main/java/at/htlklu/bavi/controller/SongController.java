@@ -30,8 +30,6 @@ public class SongController {
 
     @Autowired
     SongsRepository songsRepository;
-    @Autowired
-    private MinioService minioService;
 
 
     //http://localhost:8082/songs
@@ -56,15 +54,15 @@ public class SongController {
     }
     //http://localhost:8082/songs/id
     @GetMapping(value = "{songId}")
-    public ResponseEntity<?> getByIdPV(@PathVariable Integer songId){
-        logger.info(LogUtils.info(CLASS_NAME,"getByIdPV",String.format("(%d)", songId)));
+    public ResponseEntity<?> getById(@PathVariable Integer songId){
+        logger.info(LogUtils.info(CLASS_NAME,"getById",String.format("(%d)", songId)));
 
         ResponseEntity<?> result;
         Optional<Song> optionalSong = songsRepository.findById(songId);
         if (optionalSong.isPresent()){
 
             Song song= optionalSong.get();
-            result =  new ResponseEntity<Song>(song, HttpStatus.OK);
+            result = new ResponseEntity<>(song, HttpStatus.OK);
         }else{
             result = new ResponseEntity<>(String.format("Song mit der Id = %d nicht vorhanden", songId),HttpStatus.NOT_FOUND);
         }
@@ -72,7 +70,97 @@ public class SongController {
     }
 
     // einfügen einer neuen Ressource
-   /* @PostMapping(value = "")
+  
+
+    @PostMapping(value = "")
+    public ResponseEntity<Object> add(@Valid @RequestBody Song song, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", song)));
+
+        if (bindingResult.hasErrors()) {
+            // Validation errors
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            // Attempt to save the song
+            Song savedSong = songsRepository.save(song);
+            return new ResponseEntity<>(savedSong, HttpStatus.CREATED);
+        } catch (Exception e) {
+            // Log the exception
+            logger.error("Error saving song", e);
+
+            // Handle specific exceptions if needed
+            if (e instanceof DataIntegrityViolationException) {
+                // Handle data integrity violations
+                return new ResponseEntity<>("Duplicate entry or data integrity violation", HttpStatus.CONFLICT);
+            }
+
+            // Generic error response
+            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+  
+    @PutMapping(value = "")
+    public ResponseEntity<Object> update(@Valid @RequestBody Song song, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "update", String.format("(%s)", song)));
+
+        if (bindingResult.hasErrors()) {
+            // Validation errors
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            // Attempt to update the song
+            Song updatedSong = songsRepository.save(song);
+            return new ResponseEntity<>(updatedSong, HttpStatus.OK);
+        } catch (Exception e) {
+            // Log the exception
+            logger.error("Error updating song", e);
+
+            // Handle specific exceptions if needed
+            if (e instanceof DataIntegrityViolationException) {
+                // Handle data integrity violations
+                return new ResponseEntity<>("Duplicate entry or data integrity violation", HttpStatus.CONFLICT);
+            }
+
+            // Generic error response
+            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+    //http://localhost:8082/songs/id (delete)
+   
+    @DeleteMapping(value = "{songId}")
+    public ResponseEntity<Object> deletePV(@PathVariable Integer songId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", songId)));
+
+        try {
+            Optional<Song> songOptional = songsRepository.findById(songId);
+
+            if (songOptional.isPresent()) {
+                Song song = songOptional.get();
+                songsRepository.delete(song);
+                return new ResponseEntity<>(song, HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity<>("Song not found", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            // Log the exception
+            logger.error("Error deleting song", e);
+
+            // Handle specific exceptions if needed
+            if (e instanceof DataIntegrityViolationException) {
+                // Handle data integrity violations
+                return new ResponseEntity<>("Data integrity violation", HttpStatus.CONFLICT);
+            }
+
+            // Generic error response
+            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+     /* @PostMapping(value = "")
     public ResponseEntity<?> add(@Valid @RequestBody Song song,
                                  BindingResult bindingResult) {
 
@@ -109,35 +197,7 @@ public class SongController {
         return result;
         }
 */
-
-    @PostMapping(value = "")
-    public ResponseEntity<Object> add(@Valid @RequestBody Song song, BindingResult bindingResult) {
-        logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", song)));
-
-        if (bindingResult.hasErrors()) {
-            // Validation errors
-            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
-        }
-
-        try {
-            // Attempt to save the song
-            Song savedSong = songsRepository.save(song);
-            return new ResponseEntity<>(savedSong, HttpStatus.CREATED);
-        } catch (Exception e) {
-            // Log the exception
-            logger.error("Error saving song", e);
-
-            // Handle specific exceptions if needed
-            if (e instanceof DataIntegrityViolationException) {
-                // Handle data integrity violations
-                return new ResponseEntity<>("Duplicate entry or data integrity violation", HttpStatus.CONFLICT);
-            }
-
-            // Generic error response
-            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-   /* @PostMapping(value = "")
+     /* @PostMapping(value = "")
     public ResponseEntity<?> add(@Valid @RequestBody Song song, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", song)));
 
@@ -205,100 +265,6 @@ public class SongController {
 
         return result;
     }*/
-    @PutMapping(value = "")
-    public ResponseEntity<Object> update(@Valid @RequestBody Song song, BindingResult bindingResult) {
-        logger.info(LogUtils.info(CLASS_NAME, "update", String.format("(%s)", song)));
-
-        if (bindingResult.hasErrors()) {
-            // Validation errors
-            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
-        }
-
-        try {
-            // Attempt to update the song
-            Song updatedSong = songsRepository.save(song);
-            return new ResponseEntity<>(updatedSong, HttpStatus.OK);
-        } catch (Exception e) {
-            // Log the exception
-            logger.error("Error updating song", e);
-
-            // Handle specific exceptions if needed
-            if (e instanceof DataIntegrityViolationException) {
-                // Handle data integrity violations
-                return new ResponseEntity<>("Duplicate entry or data integrity violation", HttpStatus.CONFLICT);
-            }
-
-            // Generic error response
-            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-
-
-    //http://localhost:8082/songs/id (delete)
-    /*@DeleteMapping(value = "{songId}")
-    public ResponseEntity<?> deletePV(@PathVariable Integer songId) {
-        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", songId)));
-        boolean error = false;
-        String errorMessage = "";
-        ResponseEntity<?> result;
-        Song song = null;
-
-
-        if (!error) {
-            Optional<Song> songOptional = songsRepository.findById(songId);
-            if (songOptional.isPresent()) {
-                song = songOptional.get();
-            } else {
-                error = true;
-                errorMessage = "Song not found";
-            }
-        }
-
-        if (!error) {
-            try {
-                songsRepository.delete(song);
-            } catch (Exception e) {
-                error = true;
-                errorMessage = ErrorsUtils.getErrorMessage(e);
-            }
-        }
-        if (!error) {
-            result = new ResponseEntity<Song>(song, HttpStatus.OK);
-        } else {
-            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return result;
-    }*/
-    @DeleteMapping(value = "{songId}")
-    public ResponseEntity<Object> deletePV(@PathVariable Integer songId) {
-        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", songId)));
-
-        try {
-            Optional<Song> songOptional = songsRepository.findById(songId);
-
-            if (songOptional.isPresent()) {
-                Song song = songOptional.get();
-                songsRepository.delete(song);
-                return new ResponseEntity<>(song, HttpStatus.NO_CONTENT);
-            } else {
-                return new ResponseEntity<>("Song not found", HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            // Log the exception
-            logger.error("Error deleting song", e);
-
-            // Handle specific exceptions if needed
-            if (e instanceof DataIntegrityViolationException) {
-                // Handle data integrity violations
-                return new ResponseEntity<>("Data integrity violation", HttpStatus.CONFLICT);
-            }
-
-            // Generic error response
-            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
     /*@DeleteMapping(value = "{songId}")
     public ResponseEntity<Object> deletePV(@PathVariable Integer songId) {
         logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", songId)));
@@ -336,6 +302,41 @@ public class SongController {
             // Generic error response
             return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }*/
+     /*@DeleteMapping(value = "{songId}")
+    public ResponseEntity<?> deletePV(@PathVariable Integer songId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", songId)));
+        boolean error = false;
+        String errorMessage = "";
+        ResponseEntity<?> result;
+        Song song = null;
+
+
+        if (!error) {
+            Optional<Song> songOptional = songsRepository.findById(songId);
+            if (songOptional.isPresent()) {
+                song = songOptional.get();
+            } else {
+                error = true;
+                errorMessage = "Song not found";
+            }
+        }
+
+        if (!error) {
+            try {
+                songsRepository.delete(song);
+            } catch (Exception e) {
+                error = true;
+                errorMessage = ErrorsUtils.getErrorMessage(e);
+            }
+        }
+        if (!error) {
+            result = new ResponseEntity<Song>(song, HttpStatus.OK);
+        } else {
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
     }*/
 
 

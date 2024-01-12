@@ -14,10 +14,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("genres")
@@ -62,7 +62,7 @@ public class GenreController {
         if (optionalGenre.isPresent()){
 
             Genre genre = optionalGenre.get();
-            result =  new ResponseEntity<Genre>(genre, HttpStatus.OK);
+            result = new ResponseEntity<>(genre, HttpStatus.OK);
         }else{
             result = new ResponseEntity<>(String.format("Genre mit der Id = %d nicht vorhanden", genreId),HttpStatus.NOT_FOUND);
         }
@@ -72,9 +72,9 @@ public class GenreController {
     //http://localhost:8082/genres/id/songs
 
     @GetMapping(value = "{genreId}/songs")
-    public ResponseEntity<?> getSongsByIdPV(@PathVariable Integer genreId){
+    public ResponseEntity<?> getSongsById(@PathVariable Integer genreId){
 
-        logger.info(LogUtils.info(CLASS_NAME,"getSongsByIdPV",String.format("(%d)", genreId)));
+        logger.info(LogUtils.info(CLASS_NAME,"getSongsById",String.format("(%d)", genreId)));
 
         ResponseEntity<?> result;
         Optional<Genre> optionalGenre = genresRepository.findById(genreId);
@@ -88,7 +88,64 @@ public class GenreController {
         return result;
 
     }
-    // einfügen einer neuen Ressource
+    // Einfügen einer neuen Ressource
+    @PostMapping("")
+    public ResponseEntity<?> addGenre(@Valid @RequestBody Genre genre, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "addGenre", String.format("(%s)", genre)));
+        return getResponseEntity(genre, bindingResult);
+    }
+
+    // Ändern einer vorhandenen Ressource
+    @PutMapping("")
+    public ResponseEntity<?> updateGenre(@Valid @RequestBody Genre genre, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "updateGenre", String.format("(%s)", genre)));
+        return getResponseEntity(genre, bindingResult);
+    }
+
+    @ NotNull
+    private ResponseEntity<?> getResponseEntity(@RequestBody @Valid Genre genre, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            Genre savedGenre = genresRepository.save(genre);
+            return new ResponseEntity<>(savedGenre, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace(); // Consider logging the exception
+            String errorMessage = e.getCause().getCause().getLocalizedMessage();
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // http://localhost:8082/genres/id (delete)
+    @DeleteMapping(value = "{genreId}")
+    public ResponseEntity<?> deleteGenre(@PathVariable Integer genreId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deleteGenre", String.format("(%d)", genreId)));
+        String errorMessage = "";
+        ResponseEntity<?> result;
+        Genre genre;
+
+        Optional<Genre> optionalGenre = genresRepository.findById(genreId);
+        if (optionalGenre.isPresent()) {
+            genre = optionalGenre.get();
+        } else {
+            return new ResponseEntity<>("Genre not found", HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            genresRepository.delete(genre);
+            result = new ResponseEntity<>(genre, HttpStatus.OK);
+        } catch (Exception e) {
+            errorMessage = ErrorsUtils.getErrorMessage(e);
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+
+    /*// einfügen einer neuen Ressource
     @PostMapping(value = "")
     public ResponseEntity<?> add(@Valid @RequestBody Genre genre,
                                  BindingResult bindingResult) {
@@ -195,7 +252,7 @@ public class GenreController {
         }
 
         return result;
-    }
+    }*/
 
 
 

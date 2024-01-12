@@ -1,18 +1,14 @@
 package at.htlklu.bavi.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "Song")
@@ -31,7 +27,7 @@ public class Song extends RepresentationModel<Song> implements Serializable
     @Column(name = "SONG_ID")
     private Integer songId;
     @NotBlank
-    private String name;
+    private String title;
     @Column(name = "URL")
     private String url;
     @Column(name = "PRICE")
@@ -67,9 +63,9 @@ public class Song extends RepresentationModel<Song> implements Serializable
     {
     }
 
-    public Song(Integer songId, String name, String url, Double price, LocalDate dateCreated, String createdBy) {
+    public Song(Integer songId, String title, String url, Double price, LocalDate dateCreated, String createdBy) {
         this.songId = songId;
-        this.name = name;
+        this.title = title;
         this.url = url;
         this.price = price;
         this.dateCreated = dateCreated;
@@ -87,7 +83,7 @@ public class Song extends RepresentationModel<Song> implements Serializable
     public String toString() {
         return "Song{" +
                 "songId=" + songId +
-                ", name='" + name + '\'' +
+                ", title='" + title + '\'' +
                 ", url='" + url + '\'' +
                 ", price=" + price +
                 ", dateCreated=" + dateCreated +
@@ -107,12 +103,12 @@ public class Song extends RepresentationModel<Song> implements Serializable
         this.songId = songId;
     }
 
-    public String getName() {
-        return name;
+    public String getTitle() {
+        return title;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getUrl() {

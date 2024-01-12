@@ -14,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,15 +55,15 @@ public class InstrumentController {
     }
     //http://localhost:8082/instruments/id
     @GetMapping(value = "{instrumentId}")
-    public ResponseEntity<?> getByIdPV(@PathVariable Integer instrumentId){
-        logger.info(LogUtils.info(CLASS_NAME,"getByIdPV",String.format("(%d)", instrumentId)));
+    public ResponseEntity<?> getById(@PathVariable Integer instrumentId){
+        logger.info(LogUtils.info(CLASS_NAME,"getById",String.format("(%d)", instrumentId)));
 
         ResponseEntity<?> result;
         Optional<Instrument> optionalInstrument = instrumentsRepository.findById(instrumentId);
         if (optionalInstrument.isPresent()){
 
             Instrument instrument= optionalInstrument.get();
-            result =  new ResponseEntity<Instrument>(instrument, HttpStatus.OK);
+            result = new ResponseEntity<>(instrument, HttpStatus.OK);
         }else{
             result = new ResponseEntity<>(String.format("Instrument mit der Id = %d nicht vorhanden", instrumentId),HttpStatus.NOT_FOUND);
         }
@@ -72,9 +73,9 @@ public class InstrumentController {
     //http://localhost:8082/instruments/id/members
 
     @GetMapping(value = "{instrumentId}/members")
-    public ResponseEntity<?> getInstrumentsByIdPV(@PathVariable Integer instrumentId){
+    public ResponseEntity<?> getMembersByInstrumentsId(@PathVariable Integer instrumentId){
 
-        logger.info(LogUtils.info(CLASS_NAME,"getMembersByIdPV",String.format("(%d)", instrumentId)));
+        logger.info(LogUtils.info(CLASS_NAME,"getMembersByInstrumentsId",String.format("(%d)", instrumentId)));
 
         ResponseEntity<?> result;
         Optional<Instrument> optionalInstrument = instrumentsRepository.findById(instrumentId);
@@ -89,7 +90,66 @@ public class InstrumentController {
 
     }
     // einfügen einer neuen Ressource
-    @PostMapping(value = "")
+
+    @PostMapping("")
+    public ResponseEntity<?> addInstrument(@Valid @RequestBody Instrument instrument, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "addInstrument", String.format("(%s)", instrument)));
+        return getResponseEntity(instrument, bindingResult);
+    }
+
+    // ändern einer vorhandenen Ressource
+    @PutMapping("")
+    public ResponseEntity<?> updateInstrument(@Valid @RequestBody Instrument instrument, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "updateInstrument", String.format("(%s)", instrument)));
+        return getResponseEntity(instrument, bindingResult);
+    }
+
+    @NotNull
+    private ResponseEntity<?> getResponseEntity(@RequestBody @Valid Instrument instrument, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            Instrument savedInstrument = instrumentsRepository.save(instrument);
+            return new ResponseEntity<>(savedInstrument, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace(); // Consider logging the exception
+            String errorMessage = e.getCause().getCause().getLocalizedMessage();
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+    //http://localhost:8082/instruments/id (delete)
+
+    @DeleteMapping(value = "{instrumentId}")
+    public ResponseEntity<?> deleteInstrument(@PathVariable Integer instrumentId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deleteInstrument", String.format("(%d)", instrumentId)));
+        String errorMessage = "";
+        ResponseEntity<?> result;
+        Instrument instrument;
+
+        Optional<Instrument> optionalInstrument = instrumentsRepository.findById(instrumentId);
+        if (optionalInstrument.isPresent()) {
+            instrument = optionalInstrument.get();
+        } else {
+            return new ResponseEntity<>("Instrument not found", HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            instrumentsRepository.delete(instrument);
+            result = new ResponseEntity<>(instrument, HttpStatus.OK);
+        } catch (Exception e) {
+            errorMessage = ErrorsUtils.getErrorMessage(e);
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+    /* @PostMapping(value = "")
     public ResponseEntity<?> add(@Valid @RequestBody Instrument instrument,
                                  BindingResult bindingResult) {
 
@@ -158,9 +218,6 @@ public class InstrumentController {
 
         return result;
     }
-
-
-    //http://localhost:8082/instruments/id (delete)
     @DeleteMapping(value = "{instrumentId}")
     public ResponseEntity<?> deletePV(@PathVariable Integer instrumentId) {
         logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", instrumentId)));
@@ -195,7 +252,8 @@ public class InstrumentController {
         }
 
         return result;
-    }
+    }*/
+
 
 
 

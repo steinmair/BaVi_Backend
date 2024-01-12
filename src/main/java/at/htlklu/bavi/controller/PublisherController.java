@@ -14,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,15 +55,15 @@ public class PublisherController {
     }
     //http://localhost:8082/publishers/id
     @GetMapping(value = "{publisherId}")
-    public ResponseEntity<?> getByIdPV(@PathVariable Integer publisherId){
-        logger.info(LogUtils.info(CLASS_NAME,"getByIdPV",String.format("(%d)", publisherId)));
+    public ResponseEntity<?> getById(@PathVariable Integer publisherId){
+        logger.info(LogUtils.info(CLASS_NAME,"getById",String.format("(%d)", publisherId)));
 
         ResponseEntity<?> result;
         Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
         if (optionalPublisher.isPresent()){
 
             Publisher publisher= optionalPublisher.get();
-            result =  new ResponseEntity<Publisher>(publisher, HttpStatus.OK);
+            result = new ResponseEntity<>(publisher, HttpStatus.OK);
         }else{
             result = new ResponseEntity<>(String.format("Publisher mit der Id = %d nicht vorhanden", publisherId),HttpStatus.NOT_FOUND);
         }
@@ -72,9 +73,9 @@ public class PublisherController {
     //http://localhost:8082/publishers/id/songs
 
     @GetMapping(value = "{publisherId}/songs")
-    public ResponseEntity<?> getSongsByIdPV(@PathVariable Integer publisherId){
+    public ResponseEntity<?> getSongsById(@PathVariable Integer publisherId){
 
-        logger.info(LogUtils.info(CLASS_NAME,"getSongsByIdPV",String.format("(%d)", publisherId)));
+        logger.info(LogUtils.info(CLASS_NAME,"getSongsById",String.format("(%d)", publisherId)));
 
         ResponseEntity<?> result;
         Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
@@ -88,8 +89,66 @@ public class PublisherController {
         return result;
 
     }
+    // Einfügen einer neuen Ressource
+    @PostMapping("")
+    public ResponseEntity<?> addPublisher(@Valid @RequestBody Publisher publisher, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "addPublisher", String.format("(%s)", publisher)));
+        return getResponseEntity(publisher, bindingResult);
+    }
+
+    // Ändern einer vorhandenen Ressource
+    @PutMapping("")
+    public ResponseEntity<?> updatePublisher(@Valid @RequestBody Publisher publisher, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "updatePublisher", String.format("(%s)", publisher)));
+        return getResponseEntity(publisher, bindingResult);
+    }
+
+    @NotNull
+    private ResponseEntity<?> getResponseEntity(@RequestBody @Valid Publisher publisher, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            Publisher savedPublisher = publishersRepository.save(publisher);
+            return new ResponseEntity<>(savedPublisher, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace(); // Consider logging the exception
+            String errorMessage = e.getCause().getCause().getLocalizedMessage();
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // http://localhost:8082/publishers/id (delete)
+    @DeleteMapping(value = "{publisherId}")
+    public ResponseEntity<?> deletePublisher(@PathVariable Integer publisherId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deletePublisher", String.format("(%d)", publisherId)));
+        String errorMessage = "";
+        ResponseEntity<?> result;
+        Publisher publisher;
+
+        Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
+        if (optionalPublisher.isPresent()) {
+            publisher = optionalPublisher.get();
+        } else {
+            return new ResponseEntity<>("Publisher not found", HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            publishersRepository.delete(publisher);
+            result = new ResponseEntity<>(publisher, HttpStatus.OK);
+        } catch (Exception e) {
+            errorMessage = ErrorsUtils.getErrorMessage(e);
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+
+
     // einfügen einer neuen Ressource
-    @PostMapping(value = "")
+    /*@PostMapping(value = "")
     public ResponseEntity<?> add(@Valid @RequestBody Publisher publisher,
                                  BindingResult bindingResult) {
 
@@ -195,7 +254,7 @@ public class PublisherController {
         }
 
         return result;
-    }
+    }*/
 
 
 

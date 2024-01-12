@@ -16,6 +16,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,15 +61,15 @@ public class MemberController {
     }
     //http://localhost:8082/members/id
     @GetMapping(value = "{memberId}")
-    public ResponseEntity<?> getByIdPV(@PathVariable Integer memberId){
-        logger.info(LogUtils.info(CLASS_NAME,"getByIdPV",String.format("(%d)", memberId)));
+    public ResponseEntity<?> getById(@PathVariable Integer memberId){
+        logger.info(LogUtils.info(CLASS_NAME,"getById",String.format("(%d)", memberId)));
 
         ResponseEntity<?> result;
         Optional<Member> optionalMember = membersRepository.findById(memberId);
         if (optionalMember.isPresent()){
 
             Member member= optionalMember.get();
-            result =  new ResponseEntity<Member>(member, HttpStatus.OK);
+            result = new ResponseEntity<>(member, HttpStatus.OK);
         }else{
             result = new ResponseEntity<>(String.format("Member mit der Id = %d nicht vorhanden", memberId),HttpStatus.NOT_FOUND);
         }
@@ -78,9 +79,9 @@ public class MemberController {
     //http://localhost:8082/members/id/songs
 
     @GetMapping(value = "{memberId}/songs")
-    public ResponseEntity<?> getSongsByIdPV(@PathVariable Integer memberId){
+    public ResponseEntity<?> getSongsById(@PathVariable Integer memberId){
 
-        logger.info(LogUtils.info(CLASS_NAME,"getSongsByIdPV",String.format("(%d)", memberId)));
+        logger.info(LogUtils.info(CLASS_NAME,"getSongsById",String.format("(%d)", memberId)));
 
         ResponseEntity<?> result;
         Optional<Member> optionalMember = membersRepository.findById(memberId);
@@ -97,9 +98,9 @@ public class MemberController {
     //http://localhost:8082/members/id/functions
 
     @GetMapping(value = "{memberId}/functions")
-    public ResponseEntity<?> getFunctionsByIdPV(@PathVariable Integer memberId){
+    public ResponseEntity<?> getFunctionsById(@PathVariable Integer memberId){
 
-        logger.info(LogUtils.info(CLASS_NAME,"getFunctionsByIdPV",String.format("(%d)", memberId)));
+        logger.info(LogUtils.info(CLASS_NAME,"getFunctionsById",String.format("(%d)", memberId)));
 
         ResponseEntity<?> result;
         Optional<Member> optionalMember = membersRepository.findById(memberId);
@@ -116,9 +117,9 @@ public class MemberController {
     //http://localhost:8082/members/id/songs
 
     @GetMapping(value = "{memberId}/instruments")
-    public ResponseEntity<?> getInstrumentsByIdPV(@PathVariable Integer memberId){
+    public ResponseEntity<?> getInstrumentsById(@PathVariable Integer memberId){
 
-        logger.info(LogUtils.info(CLASS_NAME,"getInstrumentsByIdPV",String.format("(%d)", memberId)));
+        logger.info(LogUtils.info(CLASS_NAME,"getInstrumentsById",String.format("(%d)", memberId)));
 
         ResponseEntity<?> result;
         Optional<Member> optionalMember = membersRepository.findById(memberId);
@@ -132,7 +133,63 @@ public class MemberController {
         return result;
 
     }
-    // einfügen einer neuen Ressource
+    // Einfügen einer neuen Ressource
+    @PostMapping("")
+    public ResponseEntity<?> addMember(@Valid @RequestBody Member member, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "addMember", String.format("(%s)", member)));
+        return getResponseEntity(member, bindingResult);
+    }
+
+    // Ändern einer vorhandenen Ressource
+    @PutMapping("")
+    public ResponseEntity<?> updateMember(@Valid @RequestBody Member member, BindingResult bindingResult) {
+        logger.info(LogUtils.info(CLASS_NAME, "updateMember", String.format("(%s)", member)));
+        return getResponseEntity(member, bindingResult);
+    }
+
+    @NotNull
+    private ResponseEntity<?> getResponseEntity(@RequestBody @Valid Member member, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            Member savedMember = membersRepository.save(member);
+            return new ResponseEntity<>(savedMember, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace(); // Consider logging the exception
+            String errorMessage = e.getCause().getCause().getLocalizedMessage();
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // http://localhost:8082/members/id (delete)
+    @DeleteMapping(value = "{memberId}")
+    public ResponseEntity<?> deleteMember(@PathVariable Integer memberId) {
+        logger.info(LogUtils.info(CLASS_NAME, "deleteMember", String.format("(%d)", memberId)));
+        String errorMessage = "";
+        ResponseEntity<?> result;
+        Member member;
+
+        Optional<Member> optionalMember = membersRepository.findById(memberId);
+        if (optionalMember.isPresent()) {
+            member = optionalMember.get();
+        } else {
+            return new ResponseEntity<>("Member not found", HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            membersRepository.delete(member);
+            result = new ResponseEntity<>(member, HttpStatus.OK);
+        } catch (Exception e) {
+            errorMessage = ErrorsUtils.getErrorMessage(e);
+            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return result;
+    }
+
+    /*// einfügen einer neuen Ressource
     @PostMapping(value = "")
     public ResponseEntity<?> add(@Valid @RequestBody Member member,
                                  BindingResult bindingResult) {
@@ -239,7 +296,7 @@ public class MemberController {
         }
 
         return result;
-    }
+    }*/
 
 
 
