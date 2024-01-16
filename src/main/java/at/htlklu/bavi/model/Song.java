@@ -38,6 +38,9 @@ public class Song extends RepresentationModel<Song> implements Serializable
     @Column(name = "CREATED_BY")
     private String createdBy;
 
+    @Column(name = "ARCHIVE_NUMBER")
+    private String archivNumber;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PUBLISHER_ID")
     private Publisher publisher;
@@ -63,13 +66,14 @@ public class Song extends RepresentationModel<Song> implements Serializable
     {
     }
 
-    public Song(Integer songId, String title, String url, Double price, LocalDate dateCreated, String createdBy) {
+    public Song(Integer songId, String title, String url, Double price, LocalDate dateCreated, String createdBy, String archivNumber) {
         this.songId = songId;
         this.title = title;
         this.url = url;
         this.price = price;
         this.dateCreated = dateCreated;
         this.createdBy = createdBy;
+        this.archivNumber = archivNumber;
 
 
 
@@ -88,6 +92,7 @@ public class Song extends RepresentationModel<Song> implements Serializable
                 ", price=" + price +
                 ", dateCreated=" + dateCreated +
                 ", createdBy='" + createdBy + '\'' +
+                ", archivNumber='" + archivNumber + '\'' +
                 '}';
     }
 
@@ -101,6 +106,14 @@ public class Song extends RepresentationModel<Song> implements Serializable
 
     public void setSongId(Integer songId) {
         this.songId = songId;
+    }
+
+    public String getArchivNumber() {
+        return archivNumber;
+    }
+
+    public void setArchivNumber(String archivNumber) {
+        this.archivNumber = archivNumber;
     }
 
     public String getTitle() {

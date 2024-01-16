@@ -1,5 +1,6 @@
 package at.htlklu.bavi.controller;
 
+import at.htlklu.bavi.minio.MinioBucketExistsException;
 import at.htlklu.bavi.minio.MinioService;
 import at.htlklu.bavi.minio.MinioServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,8 @@ public class MinioController {
         try {
             minioService.createBucket(title);
             return ResponseEntity.ok().body("Bucket created successfully");
+        } catch (MinioBucketExistsException e) {
+            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Bucket already exists");
         } catch (MinioServiceException e) {
             // Log the exception or perform any additional actions
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating bucket: " + e.getMessage());
@@ -82,7 +85,10 @@ public class MinioController {
         try {
             minioService.deleteBucket(title);
             return ResponseEntity.ok().body("Bucket deleted successfully");
-        } catch (MinioServiceException e) {
+        }catch (MinioBucketExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Bucket does not Exist");
+        }
+        catch (MinioServiceException e) {
             // Log the exception or perform any additional actions
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting bucket: " + e.getMessage());
         }
