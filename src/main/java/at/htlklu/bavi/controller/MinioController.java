@@ -20,20 +20,21 @@ public class MinioController {
     @Autowired
     private MinioService minioService;
 
-    @PostMapping("{title}/upload")
-    public ResponseEntity<String> uploadFile(@PathVariable String title, @RequestParam("file") MultipartFile file) {
+
+    @PostMapping("{archivNumber}/upload")
+    public ResponseEntity<String> uploadFile(@PathVariable String archivNumber, @RequestParam("file") MultipartFile file) {
         try {
-            minioService.uploadFile(title, file.getOriginalFilename(), file.getInputStream(), file.getContentType());
+            minioService.uploadFile(archivNumber, file.getOriginalFilename(), file.getInputStream(), file.getContentType());
             return ResponseEntity.ok().body("File uploaded successfully");
         } catch (IOException e) {
             return ResponseEntity.badRequest().body("Failed to upload file");
         }
     }
 
-    @GetMapping("{title}/{file}/download")
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String title, @PathVariable String file) {
+    @GetMapping("{archivNumber}/{file}/download")
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String archivNumber, @PathVariable String file) {
         try {
-            InputStreamResource resource = new InputStreamResource(minioService.downloadFile(title, file));
+            InputStreamResource resource = new InputStreamResource(minioService.downloadFile(archivNumber, file));
             return ResponseEntity.ok()
                     .contentLength(resource.contentLength())
                     .header("Content-Disposition", "attachment; filename=\"" + file + "\"")
@@ -44,10 +45,10 @@ public class MinioController {
         }
     }
 
-    @GetMapping("{title}/list")
-    public ResponseEntity<List<String>> listFiles(@PathVariable String title) {
+    @GetMapping("{archivNumber}/list")
+    public ResponseEntity<List<String>> listFiles(@PathVariable String archivNumber) {
         try {
-            List<String> objectNames = minioService.listFiles(title);
+            List<String> objectNames = minioService.listFiles(archivNumber);
             return ResponseEntity.ok().body(objectNames);
         } catch (MinioServiceException e) {
             // Log the exception or perform any additional actions
@@ -56,10 +57,10 @@ public class MinioController {
     }
 
 
-    @DeleteMapping("{title}/{file}/delete")
-    public ResponseEntity<String> deleteFile(@PathVariable String title, @PathVariable String file) {
+    @DeleteMapping("{archivNumber}/{file}/delete")
+    public ResponseEntity<String> deleteFile(@PathVariable String archivNumber, @PathVariable String file) {
         try {
-            minioService.deleteFile(title, file);
+            minioService.deleteFile(archivNumber, file);
             return ResponseEntity.ok().body("File " + file + " deleted successfully");
         } catch (Exception e) {
             // Handle exceptions and return appropriate response
@@ -67,10 +68,10 @@ public class MinioController {
         }
     }
 
-    @PostMapping("{title}/createBucket")
-    public ResponseEntity<String> createBucket(@PathVariable String title) {
+    @PostMapping("{archivNumber}/createBucket")
+    public ResponseEntity<String> createBucket(@PathVariable String archivNumber) {
         try {
-            minioService.createBucket(title);
+            minioService.createBucket(archivNumber);
             return ResponseEntity.ok().body("Bucket created successfully");
         } catch (MinioBucketExistsException e) {
             return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Bucket already exists");
@@ -80,10 +81,10 @@ public class MinioController {
         }
     }
 
-    @DeleteMapping("{title}/deleteBucket")
-    public ResponseEntity<String> deleteBucket(@PathVariable String title) {
+    @DeleteMapping("{archivNumber}/deleteBucket")
+    public ResponseEntity<String> deleteBucket(@PathVariable String archivNumber) {
         try {
-            minioService.deleteBucket(title);
+            minioService.deleteBucket(archivNumber);
             return ResponseEntity.ok().body("Bucket deleted successfully");
         }catch (MinioBucketExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Bucket does not Exist");

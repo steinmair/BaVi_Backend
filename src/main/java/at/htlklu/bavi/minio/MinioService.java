@@ -16,6 +16,8 @@ public class MinioService {
     private MinioClient minioClient;
 
     public List<String> listFiles(String bucketName) {
+        bucketName = MinioHelper.prepareMinioBucketName(bucketName);
+
         List<String> objectNames = new ArrayList<>();
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(ListObjectsArgs.builder().bucket(bucketName).build());
@@ -44,12 +46,22 @@ public class MinioService {
     }*/
 
     public void uploadFile(String bucketName, String objectName, InputStream inputStream, String contentType) {
+        bucketName = MinioHelper.prepareMinioBucketName(bucketName);
+
+        // Check if the file already exists, if so, delete it first
+        // Existiert das Objekt? Wenn ja, loeschen
         try {
-            // Check if the file already exists, if so, delete it first
             if (minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(objectName).build()) != null) {
                 deleteFile(bucketName, objectName);
             }
+        } catch (ErrorResponseException ere) {
+            // Object does not exist
+        } catch (Exception e) {
+            // Internal Server Error
+            throw new MinioServiceException("Error uploading file to bucket: " + bucketName, e);
+        }
 
+        try {
             // Upload the new file
             minioClient.putObject(PutObjectArgs.builder()
                     .bucket(bucketName)
@@ -67,6 +79,7 @@ public class MinioService {
 
 
     public InputStream downloadFile(String bucketName, String objectName) {
+        bucketName = MinioHelper.prepareMinioBucketName(bucketName);
         try {
             return minioClient.getObject(GetObjectArgs.builder()
                     .bucket(bucketName)
@@ -81,6 +94,7 @@ public class MinioService {
 
 
     public void deleteFile(String bucketName, String objectName) {
+        bucketName = MinioHelper.prepareMinioBucketName(bucketName);
         try {
             minioClient.removeObject(RemoveObjectArgs.builder()
                     .bucket(bucketName)
@@ -92,6 +106,7 @@ public class MinioService {
         }
     }
     public void createBucket(String bucketName) {
+        bucketName = MinioHelper.prepareMinioBucketName(bucketName);
         try {
             if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
                 minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
@@ -102,6 +117,7 @@ public class MinioService {
         }
     }
     public void deleteBucket(String bucketName) {
+        bucketName = MinioHelper.prepareMinioBucketName(bucketName);
         try {
             if (minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
                 // List all objects in the bucket
