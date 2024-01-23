@@ -2,7 +2,9 @@ package at.htlklu.bavi.minio;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.messages.Item;
+import org.apache.commons.compress.utils.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -78,17 +80,21 @@ public class MinioService {
 
 
 
-    public InputStream downloadFile(String bucketName, String objectName) {
+    public ByteArrayResource downloadFile(String bucketName, String objectName) {
         bucketName = MinioHelper.prepareMinioBucketName(bucketName);
+
         try {
-            return minioClient.getObject(GetObjectArgs.builder()
+            InputStream inputStream = minioClient.getObject(GetObjectArgs.builder()
                     .bucket(bucketName)
                     .object(objectName)
                     .build());
-        } catch (Exception e) {
-            throw new FileNotFoundException("Error downloading file from bucket: " + bucketName + ", object: " + objectName, e);
-            // Handle exceptions
 
+            byte[] content = IOUtils.toByteArray(inputStream);
+
+            return new ByteArrayResource(content);
+        } catch (Exception e) {
+
+            throw new RuntimeException("Error downloading file from bucket: " + bucketName + ", object: " + objectName, e);
         }
     }
 

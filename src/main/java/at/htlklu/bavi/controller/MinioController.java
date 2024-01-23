@@ -4,6 +4,7 @@ import at.htlklu.bavi.minio.MinioBucketExistsException;
 import at.htlklu.bavi.minio.MinioService;
 import at.htlklu.bavi.minio.MinioServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +33,9 @@ public class MinioController {
     }
 
     @GetMapping("{archivNumber}/{file}/download")
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String archivNumber, @PathVariable String file) {
+    public ResponseEntity<ByteArrayResource> downloadFile(@PathVariable String archivNumber, @PathVariable String file) {
         try {
-            InputStreamResource resource = new InputStreamResource(minioService.downloadFile(archivNumber, file));
+            ByteArrayResource resource = minioService.downloadFile(archivNumber, file);
             return ResponseEntity.ok()
                     .contentLength(resource.contentLength())
                     .header("Content-Disposition", "attachment; filename=\"" + file + "\"")

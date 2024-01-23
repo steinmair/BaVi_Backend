@@ -38,7 +38,7 @@ public class Song extends RepresentationModel<Song> implements Serializable
     @Column(name = "CREATED_BY")
     private String createdBy;
 
-    @Column(name = "ARCHIVE_NUMBER")
+    @Column(name = "ARCHIV_NUMBER")
     private String archivNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
