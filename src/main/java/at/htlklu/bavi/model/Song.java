@@ -1,5 +1,6 @@
 package at.htlklu.bavi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.RepresentationModel;
@@ -41,13 +42,16 @@ public class Song extends RepresentationModel<Song> implements Serializable
     @Column(name = "ARCHIV_NUMBER")
     private String archivNumber;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PUBLISHER_ID")
     private Publisher publisher;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "GENRE_ID")
     private Genre genre;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "COMPOSER_ID")
