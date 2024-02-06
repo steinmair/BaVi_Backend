@@ -119,7 +119,7 @@ public class SongController {
 
             // Attempt to save the song
             Song savedSong = songsRepository.save(song);
-            return new ResponseEntity<>("Song created successfully", HttpStatus.CREATED);
+            return new ResponseEntity<>(savedSong, HttpStatus.CREATED);
         } catch (MinioBucketExistsException e) {
             // Handle Minio bucket already exists exception
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Bucket already exists for archive number: " + song.getArchivNumber());
