@@ -193,7 +193,7 @@ public class SongController {
                 // Delete the song from the repository
                 songsRepository.delete(song);
 
-                return new ResponseEntity<>("Song deleted succesfully", HttpStatus.OK);
+                return new ResponseEntity<>(HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("Song not found", HttpStatus.NOT_FOUND);
             }
