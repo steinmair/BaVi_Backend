@@ -20,6 +20,11 @@ import java.util.Set;
 public class Function extends RepresentationModel<Function> implements Serializable
 {
     //region static Properties
+
+    // Admin alles
+    // Schriftführer -- Members bearbeiten
+    // Archivar -- Songs bearbeiten, upload files
+    // Normal Users -- view songs, download files
     private static final long serialVersionUID = -6574326723164905323L;
 
     //endregion

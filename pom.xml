@@ -5,6 +5,7 @@
   <version>1.0.0</version>
   <name>BaVi</name>
   <description>BaVi</description>
+	<packaging>jar</packaging>
 
 	<parent>
 	  	<groupId>org.springframework.boot</groupId>

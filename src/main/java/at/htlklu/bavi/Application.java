@@ -32,3 +32,7 @@ public class Application
 
 //https://github.com/NrktSLL/spring-boot-minio/tree/master
 //https://github.com/Rapter1990/SpringBootMinio
+
+
+//https://www.baeldung.com/spring-security-jdbc-authentication
+//https://medium.com/@barbieri.santiago/implementing-user-authentication-in-java-apis-using-spring-boot-spring-security-and-spring-data-cb9eac2361f6

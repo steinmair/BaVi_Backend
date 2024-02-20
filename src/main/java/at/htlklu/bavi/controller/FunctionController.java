@@ -1,7 +1,7 @@
 package at.htlklu.bavi.controller;
 
-import at.htlklu.bavi.api.ErrorsUtils;
-import at.htlklu.bavi.api.LogUtils;
+import at.htlklu.bavi.utils.ErrorsUtils;
+import at.htlklu.bavi.utils.LogUtils;
 import at.htlklu.bavi.model.Function;
 import at.htlklu.bavi.repository.FunctionsRepository;
 import at.htlklu.bavi.repository.MembersRepository;

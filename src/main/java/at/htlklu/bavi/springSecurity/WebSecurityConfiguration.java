@@ -1,4 +1,4 @@
-package at.htlklu.bavi.configs;
+package at.htlklu.bavi.springSecurity;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

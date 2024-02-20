@@ -1,13 +1,11 @@
 package at.htlklu.bavi.controller;
 
-import at.htlklu.bavi.api.ErrorsUtils;
-import at.htlklu.bavi.api.LogUtils;
-import at.htlklu.bavi.configs.MinioFileService;
+import at.htlklu.bavi.utils.ErrorsUtils;
+import at.htlklu.bavi.utils.LogUtils;
 import at.htlklu.bavi.minio.MinioBucketExistsException;
 import at.htlklu.bavi.minio.MinioService;
 import at.htlklu.bavi.minio.MinioServiceException;
 import at.htlklu.bavi.model.Song;
-import at.htlklu.bavi.repository.ComposersRepository;
 import at.htlklu.bavi.repository.SongsRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
