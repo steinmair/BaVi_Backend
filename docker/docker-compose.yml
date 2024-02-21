@@ -3,18 +3,17 @@
 version: '3'
 
 services:
+
   backend:
     image: maven:3.9.6-amazoncorretto-21
-
     container_name: bavi-server
-    entrypoint: sh -c "cd /app  && mvn clean install && java -jar /app/target/bavi-1.0.0.jar"
+    entrypoint: sh -c "cd /app  && mvn clean package spring-boot:repackage && java -jar /app/target/bavi-1.0.0.jar"
     volumes:
       - ../:/app
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"  # Anpassen der maximalen Größe der Logdatei
-        max-file: "3"    # Anpassen der maximalen Anzahl von Logdateien
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mysql
 
   minio:
     image: minio/minio:latest
@@ -22,16 +21,12 @@ services:
     ports:
       - "9000:9000"
       - "9001:9001"
-      
     environment:
      MINIO_ROOT_USER: root
      MINIO_ROOT_PASSWORD: rootroot
     command: server --console-address ":9001" /data
-
     volumes:
       - minio_data:/data
-
-    
 
   mysql:
     image: mysql:latest
@@ -41,10 +36,12 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: BAVI
-
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./mysql:/var/lib/mysql
+
+
+
 
 volumes:
   minio_data:

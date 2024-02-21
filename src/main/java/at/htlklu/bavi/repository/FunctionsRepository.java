@@ -10,5 +10,4 @@ import java.util.Optional;
 @Repository
 public interface FunctionsRepository extends JpaRepository<Function, Integer>
 {
-    Optional<Function> findByEmail(String email);
 }

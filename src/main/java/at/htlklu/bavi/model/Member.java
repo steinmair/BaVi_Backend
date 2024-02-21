@@ -41,6 +41,7 @@ public class Member extends RepresentationModel<Member> implements Serializable
     private LocalDate birthdate;
     private String phone;
     private String eMail;
+    private String password;
     @Column(name = "HOUSE_NUMBER")
     private Integer houseNumber;
     @Column(name = "DATE_JOINED")
@@ -91,7 +92,7 @@ public class Member extends RepresentationModel<Member> implements Serializable
     {
     }
 
-    public Member( String firstname, String surname, LocalDate birthdate, String phone, String eMail,Integer houseNumber, LocalDate dateJoined, String street, Integer zipCode, String city,String createdBy) {
+    public Member( String firstname, String surname, LocalDate birthdate, String phone, String eMail,String password,Integer houseNumber, LocalDate dateJoined, String street, Integer zipCode, String city,String createdBy) {
 
         super();
         this.firstname = firstname;
@@ -99,6 +100,7 @@ public class Member extends RepresentationModel<Member> implements Serializable
         this.birthdate = birthdate;
         this.phone = phone;
         this.eMail = eMail;
+        this.password = password;
         this.houseNumber = houseNumber;
         this.dateJoined = dateJoined;
         this.street = street;
@@ -178,6 +180,14 @@ public class Member extends RepresentationModel<Member> implements Serializable
 
     public void seteMail(String eMail) {
         this.eMail = eMail;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public LocalDate getDateJoined() {
