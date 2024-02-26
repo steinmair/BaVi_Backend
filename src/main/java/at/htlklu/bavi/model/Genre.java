@@ -2,11 +2,13 @@ package at.htlklu.bavi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.hateoas.RepresentationModel;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,9 +16,9 @@ import java.util.Set;
 @Entity
 @Table(name = "Genre")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Genre extends RepresentationModel<Genre> implements Serializable
-{
+public class Genre extends RepresentationModel<Genre> implements Serializable {
     //region static Properties
+    @Serial
     private static final long serialVersionUID = -6574326723164905323L;
 
     //endregion
@@ -39,7 +41,7 @@ public class Genre extends RepresentationModel<Genre> implements Serializable
             cascade = CascadeType.MERGE,
             orphanRemoval = true,
             fetch = FetchType.LAZY)
-    private Set<Song> songs = new HashSet<Song>();
+    private Set<Song> songs = new HashSet<>();
 
     //endregion
 
@@ -49,6 +51,7 @@ public class Genre extends RepresentationModel<Genre> implements Serializable
     public Genre() {
 
     }
+
     public Genre(Integer genreId, String name, String createdBy) {
         this.genreId = genreId;
         this.name = name;
@@ -95,7 +98,6 @@ public class Genre extends RepresentationModel<Genre> implements Serializable
     }
 
     //endregion
-
 
 
 }

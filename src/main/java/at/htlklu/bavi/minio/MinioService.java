@@ -1,4 +1,5 @@
 package at.htlklu.bavi.minio;
+
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.messages.Item;
@@ -34,18 +35,7 @@ public class MinioService {
     }
 
 
-    /*public void uploadFile(String bucketName, String objectName, InputStream inputStream, String contentType) {
-        try {
-            minioClient.putObject(PutObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(objectName)
-                    .stream(inputStream, inputStream.available(), -1)
-                    .contentType(contentType)
-                    .build());
-        } catch (Exception e) {
-            // Handle exceptions
-        }
-    }*/
+
 
     public void uploadFile(String bucketName, String objectName, InputStream inputStream, String contentType) {
         bucketName = MinioHelper.prepareMinioBucketName(bucketName);
@@ -76,8 +66,6 @@ public class MinioService {
             throw new MinioServiceException("Error uploading file to bucket: " + bucketName, e);
         }
     }
-
-
 
 
     public ByteArrayResource downloadFile(String bucketName, String objectName) {
@@ -111,6 +99,7 @@ public class MinioService {
             throw new MinioServiceException("Error deleting file from bucket: " + bucketName + ", object: " + objectName, e);
         }
     }
+
     public void createBucket(String bucketName) {
         bucketName = MinioHelper.prepareMinioBucketName(bucketName);
         try {
@@ -122,6 +111,7 @@ public class MinioService {
             // Handle exceptions
         }
     }
+
     public void deleteBucket(String bucketName) {
         bucketName = MinioHelper.prepareMinioBucketName(bucketName);
         try {

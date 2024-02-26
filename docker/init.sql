@@ -15,172 +15,173 @@ CREATE SCHEMA IF NOT EXISTS `BAVI` DEFAULT CHARACTER SET utf8 ;
 USE `BAVI` ;
 
 -- -----------------------------------------------------
--- Table `BAVI`.`Function`
+-- Table `BAVI`.`Role`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `BAVI`.`Function` (
-  `FUNCTION_ID` INT NOT NULL AUTO_INCREMENT,
-  `NAME` VARCHAR(250) NOT NULL,
-  `CREATED_BY` VARCHAR(250) NOT NULL,
-  PRIMARY KEY (`FUNCTION_ID`))
-ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS `BAVI`.`Role` (
+                                             `ROLE_ID` INT NOT NULL AUTO_INCREMENT,
+                                             `NAME` VARCHAR(250) NOT NULL,
+                                             `CREATED_BY` VARCHAR(250) NOT NULL,
+                                             PRIMARY KEY (`ROLE_ID`))
+    ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
 -- Table `BAVI`.`Instrument`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BAVI`.`Instrument` (
-  `INSTRUMENT_ID` INT NOT NULL AUTO_INCREMENT,
-  `NAME` VARCHAR(250) NOT NULL,
-  `CREATED_BY` VARCHAR(250) NOT NULL,
-  PRIMARY KEY (`INSTRUMENT_ID`))
-ENGINE = InnoDB;
+                                                   `INSTRUMENT_ID` INT NOT NULL AUTO_INCREMENT,
+                                                   `NAME` VARCHAR(250) NOT NULL,
+                                                   `CREATED_BY` VARCHAR(250) NOT NULL,
+                                                   PRIMARY KEY (`INSTRUMENT_ID`))
+    ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
 -- Table `BAVI`.`Member`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BAVI`.`Member` (
-  `MEMBER_ID` INT NOT NULL AUTO_INCREMENT,
-  `FIRSTNAME` VARCHAR(250) NOT NULL,
-  `SURNAME` VARCHAR(250) NOT NULL,
-  `BIRTHDATE` DATE NULL DEFAULT NULL,
-  `PHONE` VARCHAR(45) NULL DEFAULT NULL,
-  `EMAIL` VARCHAR(200) NULL DEFAULT NULL,
-  `PASSWORD` VARCHAR(200) NULL DEFAULT NULL,
-  `HOUSE_NUMBER` INT NULL DEFAULT NULL,
-  `DATE_JOINED` DATETIME NOT NULL,
-  `STREET` VARCHAR(250) NULL DEFAULT NULL,
-  `ZIP_CODE` INT NULL DEFAULT NULL,
-  `CITY` VARCHAR(250) NULL DEFAULT NULL,
-  `CREATED_BY` VARCHAR(250) NOT NULL,
-  PRIMARY KEY (`MEMBER_ID`))
-ENGINE = InnoDB;
+                                               `MEMBER_ID` INT NOT NULL AUTO_INCREMENT,
+                                               `FIRSTNAME` VARCHAR(250) NOT NULL,
+                                               `SURNAME` VARCHAR(250) NOT NULL,
+                                               `BIRTHDATE` DATE NULL DEFAULT NULL,
+                                               `PHONE` VARCHAR(45) NULL DEFAULT NULL,
+                                               `EMAIL` VARCHAR(200) NULL DEFAULT NULL,
+                                               `PASSWORD` VARCHAR(200) NULL DEFAULT NULL,
+                                               `HOUSE_NUMBER` INT NULL DEFAULT NULL,
+                                               `DATE_JOINED` DATETIME NOT NULL,
+                                               `STREET` VARCHAR(250) NULL DEFAULT NULL,
+                                               `ZIP_CODE` INT NULL DEFAULT NULL,
+                                               `CITY` VARCHAR(250) NULL DEFAULT NULL,
+                                               `CREATED_BY` VARCHAR(250) NOT NULL,
+                                               PRIMARY KEY (`MEMBER_ID`))
+    ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
 -- Table `BAVI`.`Composer`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BAVI`.`Composer` (
-  `COMPOSER_ID` INT NOT NULL AUTO_INCREMENT,
-  `FIRSTNAME` VARCHAR(250) NOT NULL,
-  `SURNAME` VARCHAR(250) NOT NULL,
-  `CREATED_BY` VARCHAR(250) NOT NULL,
-  PRIMARY KEY (`COMPOSER_ID`))
-ENGINE = InnoDB;
+                                                 `COMPOSER_ID` INT NOT NULL AUTO_INCREMENT,
+                                                 `FIRSTNAME` VARCHAR(250) NOT NULL,
+                                                 `SURNAME` VARCHAR(250) NOT NULL,
+                                                 `CREATED_BY` VARCHAR(250) NOT NULL,
+                                                 PRIMARY KEY (`COMPOSER_ID`))
+    ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
 -- Table `BAVI`.`Genre`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BAVI`.`Genre` (
-  `GENRE_ID` INT NOT NULL AUTO_INCREMENT,
-  `NAME` VARCHAR(250) NOT NULL,
-  `CREATED_BY` VARCHAR(250) NOT NULL,
-  PRIMARY KEY (`GENRE_ID`))
-ENGINE = InnoDB;
+                                              `GENRE_ID` INT NOT NULL AUTO_INCREMENT,
+                                              `NAME` VARCHAR(250) NOT NULL,
+                                              `CREATED_BY` VARCHAR(250) NOT NULL,
+                                              PRIMARY KEY (`GENRE_ID`))
+    ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
 -- Table `BAVI`.`Publisher`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BAVI`.`Publisher` (
-  `PUBLISHER_ID` INT NOT NULL AUTO_INCREMENT,
-  `NAME` VARCHAR(250) NOT NULL,
-  `CREATED_BY` VARCHAR(250) NOT NULL,
-  PRIMARY KEY (`PUBLISHER_ID`),
-  UNIQUE INDEX `NAME_UNIQUE` (`NAME` ASC) VISIBLE)
-ENGINE = InnoDB;
+                                                  `PUBLISHER_ID` INT NOT NULL AUTO_INCREMENT,
+                                                  `NAME` VARCHAR(250) NOT NULL,
+                                                  `CREATED_BY` VARCHAR(250) NOT NULL,
+                                                  PRIMARY KEY (`PUBLISHER_ID`),
+                                                  UNIQUE INDEX `NAME_UNIQUE` (`NAME` ASC) VISIBLE)
+    ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
 -- Table `BAVI`.`Song`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `BAVI`.`Song` (
-  `SONG_ID` INT NOT NULL AUTO_INCREMENT,
-  `TITLE` VARCHAR(250) NOT NULL,
-  `URL` VARCHAR(250) NULL DEFAULT NULL,
-  `PUBLISHER_ID` INT NOT NULL,
-  `GENRE_ID` INT NOT NULL,
-  `COMPOSER_ID` INT NOT NULL,
-  `PRICE` DOUBLE NULL DEFAULT NULL,
-  `DATE_CREATED` DATETIME NOT NULL,
-  `CREATED_BY` VARCHAR(250) NOT NULL,
-  `MEMBER_ID` INT NULL,
-  `ARCHIV_NUMBER` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`SONG_ID`),
-  UNIQUE INDEX `idSong_UNIQUE` (`SONG_ID` ASC) VISIBLE,
-  INDEX `fk_Song_Publisher1_idx` (`PUBLISHER_ID` ASC) VISIBLE,
-  INDEX `fk_Song_Genre1_idx` (`GENRE_ID` ASC) VISIBLE,
-  INDEX `fk_Song_Composer1_idx` (`COMPOSER_ID` ASC) VISIBLE,
-  INDEX `fk_Song_Member1_idx` (`MEMBER_ID` ASC) VISIBLE,
-  UNIQUE INDEX `ARCHIV_NUMBER_UNIQUE` (`ARCHIV_NUMBER` ASC) VISIBLE,
-  CONSTRAINT `fk_Song_Publisher1`
-    FOREIGN KEY (`PUBLISHER_ID`)
-    REFERENCES `BAVI`.`Publisher` (`PUBLISHER_ID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Song_Genre1`
-    FOREIGN KEY (`GENRE_ID`)
-    REFERENCES `BAVI`.`Genre` (`GENRE_ID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Song_Composer1`
-    FOREIGN KEY (`COMPOSER_ID`)
-    REFERENCES `BAVI`.`Composer` (`COMPOSER_ID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Song_Member1`
-    FOREIGN KEY (`MEMBER_ID`)
-    REFERENCES `BAVI`.`Member` (`MEMBER_ID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+                                             `SONG_ID` INT NOT NULL AUTO_INCREMENT,
+                                             `TITLE` VARCHAR(250) NOT NULL,
+                                             `URL` VARCHAR(250) NULL DEFAULT NULL,
+                                             `PUBLISHER_ID` INT NOT NULL,
+                                             `GENRE_ID` INT NOT NULL,
+                                             `COMPOSER_ID` INT NOT NULL,
+                                             `PRICE` DOUBLE NULL DEFAULT NULL,
+                                             `DATE_CREATED` DATETIME NOT NULL,
+                                             `CREATED_BY` VARCHAR(250) NOT NULL,
+                                             `MEMBER_ID` INT NULL,
+                                             `ARCHIV_NUMBER` VARCHAR(45) NOT NULL,
+                                             PRIMARY KEY (`SONG_ID`),
+                                             UNIQUE INDEX `idSong_UNIQUE` (`SONG_ID` ASC) VISIBLE,
+                                             INDEX `fk_Song_Publisher1_idx` (`PUBLISHER_ID` ASC) VISIBLE,
+                                             INDEX `fk_Song_Genre1_idx` (`GENRE_ID` ASC) VISIBLE,
+                                             INDEX `fk_Song_Composer1_idx` (`COMPOSER_ID` ASC) VISIBLE,
+                                             INDEX `fk_Song_Member1_idx` (`MEMBER_ID` ASC) VISIBLE,
+                                             UNIQUE INDEX `ARCHIV_NUMBER_UNIQUE` (`ARCHIV_NUMBER` ASC) VISIBLE,
+                                             CONSTRAINT `fk_Song_Publisher1`
+                                                 FOREIGN KEY (`PUBLISHER_ID`)
+                                                     REFERENCES `BAVI`.`Publisher` (`PUBLISHER_ID`)
+                                                     ON DELETE NO ACTION
+                                                     ON UPDATE NO ACTION,
+                                             CONSTRAINT `fk_Song_Genre1`
+                                                 FOREIGN KEY (`GENRE_ID`)
+                                                     REFERENCES `BAVI`.`Genre` (`GENRE_ID`)
+                                                     ON DELETE NO ACTION
+                                                     ON UPDATE NO ACTION,
+                                             CONSTRAINT `fk_Song_Composer1`
+                                                 FOREIGN KEY (`COMPOSER_ID`)
+                                                     REFERENCES `BAVI`.`Composer` (`COMPOSER_ID`)
+                                                     ON DELETE NO ACTION
+                                                     ON UPDATE NO ACTION,
+                                             CONSTRAINT `fk_Song_Member1`
+                                                 FOREIGN KEY (`MEMBER_ID`)
+                                                     REFERENCES `BAVI`.`Member` (`MEMBER_ID`)
+                                                     ON DELETE NO ACTION
+                                                     ON UPDATE NO ACTION)
+    ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
 -- Table `BAVI`.`MembeInstrument`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `BAVI`.`MembeInstrument` (
-  `MEMBER_ID` INT NOT NULL,
-  `INSTRUMENT_ID` INT NOT NULL,
-  PRIMARY KEY (`MEMBER_ID`, `INSTRUMENT_ID`),
-  INDEX `fk_Member_has_Instrument_Instrument1_idx` (`INSTRUMENT_ID` ASC) VISIBLE,
-  INDEX `fk_Member_has_Instrument_Member1_idx` (`MEMBER_ID` ASC) VISIBLE,
-  CONSTRAINT `fk_Member_has_Instrument_Member1`
-    FOREIGN KEY (`MEMBER_ID`)
-    REFERENCES `BAVI`.`Member` (`MEMBER_ID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Member_has_Instrument_Instrument1`
-    FOREIGN KEY (`INSTRUMENT_ID`)
-    REFERENCES `BAVI`.`Instrument` (`INSTRUMENT_ID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS `BAVI`.`MemberInstrument` (
+                                                        `MEMBER_ID` INT NOT NULL,
+                                                        `INSTRUMENT_ID` INT NOT NULL,
+                                                        PRIMARY KEY (`MEMBER_ID`, `INSTRUMENT_ID`),
+                                                        INDEX `fk_Member_has_Instrument_Instrument1_idx` (`INSTRUMENT_ID` ASC) VISIBLE,
+                                                        INDEX `fk_Member_has_Instrument_Member1_idx` (`MEMBER_ID` ASC) VISIBLE,
+                                                        CONSTRAINT `fk_Member_has_Instrument_Member1`
+                                                            FOREIGN KEY (`MEMBER_ID`)
+                                                                REFERENCES `BAVI`.`Member` (`MEMBER_ID`)
+                                                                ON DELETE NO ACTION
+                                                                ON UPDATE NO ACTION,
+                                                        CONSTRAINT `fk_Member_has_Instrument_Instrument1`
+                                                            FOREIGN KEY (`INSTRUMENT_ID`)
+                                                                REFERENCES `BAVI`.`Instrument` (`INSTRUMENT_ID`)
+                                                                ON DELETE NO ACTION
+                                                                ON UPDATE NO ACTION)
+    ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
 -- Table `BAVI`.`MemberFunction`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `BAVI`.`MemberFunction` (
-  `MEMBER_ID` INT NOT NULL,
-  `FUNCTION_ID` INT NOT NULL,
-  PRIMARY KEY (`MEMBER_ID`, `FUNCTION_ID`),
-  INDEX `fk_Member_has_Function_Function1_idx` (`FUNCTION_ID` ASC) VISIBLE,
-  INDEX `fk_Member_has_Function_Member1_idx` (`MEMBER_ID` ASC) VISIBLE,
-  CONSTRAINT `fk_Member_has_Function_Member1`
-    FOREIGN KEY (`MEMBER_ID`)
-    REFERENCES `BAVI`.`Member` (`MEMBER_ID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Member_has_Function_Function1`
-    FOREIGN KEY (`FUNCTION_ID`)
-    REFERENCES `BAVI`.`Function` (`FUNCTION_ID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS `BAVI`.`MemberRole` (
+                                                   `MEMBER_ID` INT NOT NULL,
+                                                   `ROLE_ID` INT NOT NULL,
+                                                   PRIMARY KEY (`MEMBER_ID`, `ROLE_ID`),
+                                                   INDEX `fk_Member_has_Role_Role1_idx` (`ROLE_ID` ASC) VISIBLE,
+                                                   INDEX `fk_Member_has_Role_Member1_idx` (`MEMBER_ID` ASC) VISIBLE,
+                                                   CONSTRAINT `fk_Member_has_Role_Member1`
+                                                       FOREIGN KEY (`MEMBER_ID`)
+                                                           REFERENCES `BAVI`.`Member` (`MEMBER_ID`)
+                                                           ON DELETE NO ACTION
+                                                           ON UPDATE NO ACTION,
+                                                   CONSTRAINT `fk_Member_has_Role_Role1`
+                                                       FOREIGN KEY (`ROLE_ID`)
+                                                           REFERENCES `BAVI`.`Role` (`ROLE_ID`)
+                                                           ON DELETE NO ACTION
+                                                           ON UPDATE NO ACTION)
+    ENGINE = InnoDB;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+

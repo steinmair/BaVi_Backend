@@ -2,12 +2,15 @@ package at.htlklu.bavi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.RepresentationModel;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -17,9 +20,9 @@ import java.util.Set;
 @Entity
 @Table(name = "Member")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Member extends RepresentationModel<Member> implements Serializable
-{
+public class Member extends RepresentationModel<Member> implements Serializable {
     //region static Properties
+    @Serial
     private static final long serialVersionUID = -6574326723164905323L;
 
     //endregion
@@ -40,7 +43,9 @@ public class Member extends RepresentationModel<Member> implements Serializable
     @DateTimeFormat(pattern = "dd.MM.yyyy")
     private LocalDate birthdate;
     private String phone;
-    private String eMail;
+    @Email
+    private String email;
+    //@JsonIgnore
     private String password;
     @Column(name = "HOUSE_NUMBER")
     private Integer houseNumber;
@@ -61,16 +66,16 @@ public class Member extends RepresentationModel<Member> implements Serializable
     @JsonIgnore
     @ManyToMany
     @JoinTable(
-            name = "MemberFunction",
+            name = "MemberRole",
             joinColumns = @JoinColumn(name = "MEMBER_ID"),
-            inverseJoinColumns = @JoinColumn(name = "FUNCTION_ID")
+            inverseJoinColumns = @JoinColumn(name = "ROLE_ID")
     )
-    Set<Function> functions;
+    Set<Role> roles;
 
     @JsonIgnore
     @ManyToMany
     @JoinTable(
-            name = "MemberFunction",
+            name = "MemberInstrument",
             joinColumns = @JoinColumn(name = "MEMBER_ID"),
             inverseJoinColumns = @JoinColumn(name = "INSTRUMENT_ID")
     )
@@ -81,25 +86,24 @@ public class Member extends RepresentationModel<Member> implements Serializable
             cascade = CascadeType.MERGE,
             orphanRemoval = true,
             fetch = FetchType.LAZY)
-    private Set<Song> songs = new HashSet<Song>();
+    private Set<Song> songs = new HashSet<>();
 
 
     //endregion
 
 
     //region Constructors
-    public Member()
-    {
+    public Member() {
     }
 
-    public Member( String firstname, String surname, LocalDate birthdate, String phone, String eMail,String password,Integer houseNumber, LocalDate dateJoined, String street, Integer zipCode, String city,String createdBy) {
+    public Member(String firstname, String surname, LocalDate birthdate, String phone, String email, String password, Integer houseNumber, LocalDate dateJoined, String street, Integer zipCode, String city, String createdBy) {
 
         super();
         this.firstname = firstname;
         this.surname = surname;
         this.birthdate = birthdate;
         this.phone = phone;
-        this.eMail = eMail;
+        this.email = email;
         this.password = password;
         this.houseNumber = houseNumber;
         this.dateJoined = dateJoined;
@@ -107,7 +111,6 @@ public class Member extends RepresentationModel<Member> implements Serializable
         this.zipCode = zipCode;
         this.city = city;
         this.createdBy = createdBy;
-
 
 
     }
@@ -174,12 +177,12 @@ public class Member extends RepresentationModel<Member> implements Serializable
         this.phone = phone;
     }
 
-    public String geteMail() {
-        return eMail;
+    public String getEmail() {
+        return email;
     }
 
-    public void seteMail(String eMail) {
-        this.eMail = eMail;
+    public void setEmail(String eMail) {
+        this.email = eMail;
     }
 
     public String getPassword() {
@@ -223,12 +226,12 @@ public class Member extends RepresentationModel<Member> implements Serializable
         this.city = city;
     }
 
-    public Set<Function> getFunctions() {
-        return functions;
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-    public void setFunctions(Set<Function> functions) {
-        this.functions = functions;
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
     public Set<Instrument> getInstruments() {
@@ -249,33 +252,26 @@ public class Member extends RepresentationModel<Member> implements Serializable
     //endregion
 
     //region HashCode and Equals
-	@Override
-	public int hashCode() {
-	    return getClass().hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 
-	@Override
-	public boolean equals(Object obj)
-	{
-		boolean equal;
-		Member member1 = this;
-		if (member1 == obj)
-		{
-			equal = true;
-		}
-		else if ((obj == null) || (!(obj instanceof Member)))
-		{
-			equal = false;
-		}
-		else
-		{
-			Member member2 = (Member) obj;
-			equal = member1.memberId != null && Objects.equals(member1.memberId, member2.getMemberId());
-		}
-		return equal;
-	}
-	//endregion
-
+    @Override
+    public boolean equals(Object obj) {
+        boolean equal;
+        Member member1 = this;
+        if (member1 == obj) {
+            equal = true;
+        } else if ((!(obj instanceof Member))) {
+            equal = false;
+        } else {
+            Member member2 = (Member) obj;
+            equal = member1.memberId != null && Objects.equals(member1.memberId, member2.getMemberId());
+        }
+        return equal;
+    }
+    //endregion
 
 
 }

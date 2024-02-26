@@ -3,11 +3,13 @@ package at.htlklu.bavi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.hateoas.RepresentationModel;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,9 +17,9 @@ import java.util.Set;
 @Entity
 @Table(name = "Publisher")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Publisher extends RepresentationModel<Publisher> implements Serializable
-{
+public class Publisher extends RepresentationModel<Publisher> implements Serializable {
     //region static Properties
+    @Serial
     private static final long serialVersionUID = -6574326723164905323L;
 
     //endregion
@@ -41,7 +43,7 @@ public class Publisher extends RepresentationModel<Publisher> implements Seriali
             cascade = CascadeType.MERGE,
             orphanRemoval = true,
             fetch = FetchType.LAZY)
-    private Set<Song> songs = new HashSet<Song>();
+    private Set<Song> songs = new HashSet<>();
 
     //endregion
 
@@ -51,6 +53,7 @@ public class Publisher extends RepresentationModel<Publisher> implements Seriali
     public Publisher() {
 
     }
+
     public Publisher(Integer publisherId, String name, String createdBy) {
         this.publisherId = publisherId;
         this.name = name;
@@ -97,7 +100,6 @@ public class Publisher extends RepresentationModel<Publisher> implements Seriali
     }
 
     //endregion
-
 
 
 }

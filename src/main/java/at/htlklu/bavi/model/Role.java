@@ -1,30 +1,28 @@
 package at.htlklu.bavi.model;
 
 
-
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.hateoas.RepresentationModel;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "Function")
+@Table(name = "Role")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Function extends RepresentationModel<Function> implements Serializable
-{
+public class Role extends RepresentationModel<Role> implements Serializable {
     //region static Properties
 
     // Admin alles
     // Schriftführer -- Members bearbeiten
     // Archivar -- Songs bearbeiten, upload files
     // Normal Users -- view songs, download files
+    @Serial
     private static final long serialVersionUID = -6574326723164905323L;
 
     //endregion
@@ -33,18 +31,18 @@ public class Function extends RepresentationModel<Function> implements Serializa
     //region Properties
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "FUNCTION_ID")
-    private Integer functionId;
+    @Column(name = "ROLE_ID")
+    private Integer roleId;
 
-    @NotBlank
-    private String name;
+    @Enumerated(EnumType.STRING)
+    private ERole name;
 
     @NotNull
     @Column(name = "CREATED_BY")
     private String createdBy;
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "functions")
+    @ManyToMany(mappedBy = "roles")
     Set<Member> members;
 
     //endregion
@@ -52,12 +50,12 @@ public class Function extends RepresentationModel<Function> implements Serializa
 
     //region Constructors
 
-    public Function() {
+    public Role() {
 
     }
 
-    public Function(Integer functionId, String name,String createdBy) {
-        this.functionId = functionId;
+    public Role(Integer roleId, ERole name, String createdBy) {
+        this.roleId = roleId;
         this.name = name;
         this.createdBy = createdBy;
     }
@@ -76,19 +74,19 @@ public class Function extends RepresentationModel<Function> implements Serializa
         this.createdBy = createdBy;
     }
 
-    public Integer getFunctionId() {
-        return functionId;
+    public Integer getRoleId() {
+        return roleId;
     }
 
-    public void setFunctionId(Integer functionId) {
-        this.functionId = functionId;
+    public void setRoleId(Integer roleId) {
+        this.roleId = roleId;
     }
 
-    public String getName() {
+    public ERole getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(ERole name) {
         this.name = name;
     }
 
@@ -101,7 +99,6 @@ public class Function extends RepresentationModel<Function> implements Serializa
     }
 
 //endregion
-
 
 
 }

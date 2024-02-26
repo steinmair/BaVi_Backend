@@ -1,12 +1,15 @@
 package at.htlklu.bavi.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.RepresentationModel;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -14,9 +17,9 @@ import java.util.Objects;
 @Entity
 @Table(name = "Song")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Song extends RepresentationModel<Song> implements Serializable
-{
+public class Song extends RepresentationModel<Song> implements Serializable {
     //region static Properties
+    @Serial
     private static final long serialVersionUID = -6574326723164905323L;
 
     //endregion
@@ -66,8 +69,7 @@ public class Song extends RepresentationModel<Song> implements Serializable
 
 
     //region Constructors
-    public Song()
-    {
+    public Song() {
     }
 
     public Song(Integer songId, String title, String url, Double price, LocalDate dateCreated, String createdBy, String archivNumber) {
@@ -80,12 +82,12 @@ public class Song extends RepresentationModel<Song> implements Serializable
         this.archivNumber = archivNumber;
 
 
-
     }
 
 //endregion
 
 //region toString
+
 
     @Override
     public String toString() {
@@ -195,33 +197,26 @@ public class Song extends RepresentationModel<Song> implements Serializable
     //endregion
 
     //region HashCode and Equals
-	@Override
-	public int hashCode() {
-	    return getClass().hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 
-	@Override
-	public boolean equals(Object obj)
-	{
-		boolean equal;
-		Song song1 = this;
-		if (song1 == obj)
-		{
-			equal = true;
-		}
-		else if ((obj == null) || (!(obj instanceof Song)))
-		{
-			equal = false;
-		}
-		else
-		{
-			Song song2 = (Song) obj;
-			equal = song1.songId != null && Objects.equals(song1.songId, song2.getSongId());
-		}
-		return equal;
-	}
-	//endregion
-
+    @Override
+    public boolean equals(Object obj) {
+        boolean equal;
+        Song song1 = this;
+        if (song1 == obj) {
+            equal = true;
+        } else if ((!(obj instanceof Song))) {
+            equal = false;
+        } else {
+            Song song2 = (Song) obj;
+            equal = song1.songId != null && Objects.equals(song1.songId, song2.getSongId());
+        }
+        return equal;
+    }
+    //endregion
 
 
 }

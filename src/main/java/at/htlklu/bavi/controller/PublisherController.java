@@ -5,26 +5,27 @@ import at.htlklu.bavi.utils.LogUtils;
 import at.htlklu.bavi.model.Publisher;
 import at.htlklu.bavi.repository.PublishersRepository;
 import at.htlklu.bavi.repository.SongsRepository;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+
 import java.util.List;
 import java.util.Optional;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("publishers")
 public class PublisherController {
 
-    private static Logger logger = LogManager.getLogger(SongController.class);
+    private static final Logger logger = LogManager.getLogger(PublisherController.class);
     private static final String CLASS_NAME = "PublisherController";
 
     @Autowired
@@ -34,6 +35,7 @@ public class PublisherController {
 
 
     //http://localhost:8082/publishers
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("")
     public ResponseEntity<?> getAllPublishers() {
         logger.info(LogUtils.info(CLASS_NAME, "getAllPublishers", "Retrieving all publishers"));
@@ -53,43 +55,47 @@ public class PublisherController {
         }
         return result;
     }
+
     //http://localhost:8082/publishers/id
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping(value = "{publisherId}")
-    public ResponseEntity<?> getById(@PathVariable Integer publisherId){
-        logger.info(LogUtils.info(CLASS_NAME,"getById",String.format("(%d)", publisherId)));
+    public ResponseEntity<?> getById(@PathVariable Integer publisherId) {
+        logger.info(LogUtils.info(CLASS_NAME, "getById", String.format("(%d)", publisherId)));
 
         ResponseEntity<?> result;
         Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
-        if (optionalPublisher.isPresent()){
+        if (optionalPublisher.isPresent()) {
 
-            Publisher publisher= optionalPublisher.get();
+            Publisher publisher = optionalPublisher.get();
             result = new ResponseEntity<>(publisher, HttpStatus.OK);
-        }else{
-            result = new ResponseEntity<>(String.format("Publisher mit der Id = %d nicht vorhanden", publisherId),HttpStatus.NOT_FOUND);
+        } else {
+            result = new ResponseEntity<>(String.format("Publisher mit der Id = %d nicht vorhanden", publisherId), HttpStatus.NOT_FOUND);
         }
         return result;
     }
 
     //http://localhost:8082/publishers/id/songs
-
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping(value = "{publisherId}/songs")
-    public ResponseEntity<?> getSongsById(@PathVariable Integer publisherId){
+    public ResponseEntity<?> getSongsById(@PathVariable Integer publisherId) {
 
-        logger.info(LogUtils.info(CLASS_NAME,"getSongsById",String.format("(%d)", publisherId)));
+        logger.info(LogUtils.info(CLASS_NAME, "getSongsById", String.format("(%d)", publisherId)));
 
         ResponseEntity<?> result;
         Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
-        if (optionalPublisher.isPresent()){
+        if (optionalPublisher.isPresent()) {
 
             Publisher publisher = optionalPublisher.get();
-            result =  new ResponseEntity<>(publisher.getSongs(), HttpStatus.OK);
-        }else{
-            result = new ResponseEntity<>(String.format("Publisher mit der Id = %d nicht vorhanden", publisherId),HttpStatus.NOT_FOUND);
+            result = new ResponseEntity<>(publisher.getSongs(), HttpStatus.OK);
+        } else {
+            result = new ResponseEntity<>(String.format("Publisher mit der Id = %d nicht vorhanden", publisherId), HttpStatus.NOT_FOUND);
         }
         return result;
 
     }
+
     // Einfügen einer neuen Ressource
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("")
     public ResponseEntity<?> addPublisher(@Valid @RequestBody Publisher publisher, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "addPublisher", String.format("(%s)", publisher)));
@@ -97,6 +103,7 @@ public class PublisherController {
     }
 
     // Ändern einer vorhandenen Ressource
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("")
     public ResponseEntity<?> updatePublisher(@Valid @RequestBody Publisher publisher, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "updatePublisher", String.format("(%s)", publisher)));
@@ -120,10 +127,11 @@ public class PublisherController {
     }
 
     // http://localhost:8082/publishers/id (delete)
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "{publisherId}")
     public ResponseEntity<?> deletePublisher(@PathVariable Integer publisherId) {
         logger.info(LogUtils.info(CLASS_NAME, "deletePublisher", String.format("(%d)", publisherId)));
-        String errorMessage = "";
+        String errorMessage;
         ResponseEntity<?> result;
         Publisher publisher;
 
@@ -144,119 +152,6 @@ public class PublisherController {
 
         return result;
     }
-
-
-
-    // einfügen einer neuen Ressource
-    /*@PostMapping(value = "")
-    public ResponseEntity<?> add(@Valid @RequestBody Publisher publisher,
-                                 BindingResult bindingResult) {
-
-        logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", publisher)));
-
-        boolean error = false;
-        String errorMessage = "";
-
-        if (!error) {
-            error = bindingResult.hasErrors();
-            errorMessage = bindingResult.toString();
-        }
-
-        if (!error) {
-            try {
-                publishersRepository.save(publisher);
-            } catch (Exception e) {
-                e.printStackTrace();
-                error = true;
-                errorMessage = e.getCause().getCause().getLocalizedMessage();
-            }
-        }
-
-        ResponseEntity<?> result;
-        if (!error) {
-            result = new ResponseEntity<Publisher>(publisher, HttpStatus.OK);
-
-        } else {
-            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return result;
-
-    }
-
-    // ändern einer vorhandenen Ressource
-    @PutMapping(value = "")
-    public ResponseEntity<?> update(@Valid @RequestBody Publisher publisher,
-                                    BindingResult bindingResult) {
-
-        logger.info(LogUtils.info(CLASS_NAME, "update", String.format("(%s)", publisher)));
-
-        boolean error = false;
-        String errorMessage = "";
-
-        if (!error) {
-            error = bindingResult.hasErrors();
-            errorMessage = bindingResult.toString();
-        }
-        if (!error) {
-            try {
-                publishersRepository.save(publisher);
-            } catch (Exception e) {
-                e.printStackTrace();
-                error = true;
-                errorMessage = e.getCause().getCause().getLocalizedMessage();
-            }
-        }
-        ResponseEntity<?> result;
-        if (!error) {
-            result = new ResponseEntity<Publisher>(publisher, HttpStatus.OK);
-
-        } else {
-            result = new ResponseEntity<String>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return result;
-    }
-
-
-    //http://localhost:8082/publishers/id (delete)
-    @DeleteMapping(value = "{publisherId}")
-    public ResponseEntity<?> deletePV(@PathVariable Integer publisherId) {
-        logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", publisherId)));
-        boolean error = false;
-        String errorMessage = "";
-        ResponseEntity<?> result;
-        Publisher publisher = null;
-
-
-        if (!error) {
-            Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
-            if (optionalPublisher.isPresent()) {
-                publisher = optionalPublisher.get();
-            } else {
-                error = true;
-                errorMessage = "Publisher not found";
-            }
-        }
-
-        if (!error) {
-            try {
-                publishersRepository.delete(publisher);
-            } catch (Exception e) {
-                error = true;
-                errorMessage = ErrorsUtils.getErrorMessage(e);
-            }
-        }
-        if (!error) {
-            result = new ResponseEntity<Publisher>(publisher, HttpStatus.OK);
-        } else {
-            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return result;
-    }*/
-
-
 
 
 }

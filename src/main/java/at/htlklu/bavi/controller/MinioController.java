@@ -5,15 +5,17 @@ import at.htlklu.bavi.minio.MinioService;
 import at.htlklu.bavi.minio.MinioServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.InputStreamResource;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("")
 public class MinioController {
@@ -22,6 +24,7 @@ public class MinioController {
     private MinioService minioService;
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("{archivNumber}/upload")
     public ResponseEntity<String> uploadFile(@PathVariable String archivNumber, @RequestParam("file") MultipartFile file) {
         try {
@@ -32,6 +35,7 @@ public class MinioController {
         }
     }
 
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("{archivNumber}/{file}/download")
     public ResponseEntity<ByteArrayResource> downloadFile(@PathVariable String archivNumber, @PathVariable String file) {
         try {
@@ -46,6 +50,7 @@ public class MinioController {
         }
     }
 
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("{archivNumber}/list")
     public ResponseEntity<List<String>> listFiles(@PathVariable String archivNumber) {
         try {
@@ -58,6 +63,7 @@ public class MinioController {
     }
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("{archivNumber}/{file}/delete")
     public ResponseEntity<String> deleteFile(@PathVariable String archivNumber, @PathVariable String file) {
         try {
@@ -68,6 +74,8 @@ public class MinioController {
             return ResponseEntity.status(500).body("Failed to delete file");
         }
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
 
     @PostMapping("{archivNumber}/createBucket")
     public ResponseEntity<String> createBucket(@PathVariable String archivNumber) {
@@ -82,15 +90,15 @@ public class MinioController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("{archivNumber}/deleteBucket")
     public ResponseEntity<String> deleteBucket(@PathVariable String archivNumber) {
         try {
             minioService.deleteBucket(archivNumber);
             return ResponseEntity.ok().body("Bucket deleted successfully");
-        }catch (MinioBucketExistsException e) {
+        } catch (MinioBucketExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Bucket does not Exist");
-        }
-        catch (MinioServiceException e) {
+        } catch (MinioServiceException e) {
             // Log the exception or perform any additional actions
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting bucket: " + e.getMessage());
         }

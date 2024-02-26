@@ -19,4 +19,6 @@ public class LogUtils
 	{
 		return LogUtils.info(className, methodName, "");
 	}
+
+
 }
