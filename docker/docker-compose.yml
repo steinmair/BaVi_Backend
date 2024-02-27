@@ -4,7 +4,7 @@ services:
 
   backend:
     image: maven:3.9.6-amazoncorretto-21
-    container_name: bavi-server
+    container_name: bavi_server
     entrypoint: sh -c "cd /app  && mvn clean package spring-boot:repackage && java -jar /app/target/bavi-1.0.0.jar"
     volumes:
       - ../:/app
