@@ -7,6 +7,10 @@ import at.htlklu.bavi.minio.MinioService;
 import at.htlklu.bavi.minio.MinioServiceException;
 import at.htlklu.bavi.model.Song;
 import at.htlklu.bavi.repository.SongsRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +43,11 @@ public class SongController {
     //http://localhost:8082/songs
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("")
+    @Operation(summary = "Get All Songs", description = "Retrieve all songs")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved songs",
+            content = @Content(schema = @Schema(implementation = Song.class)))
+    @ApiResponse(responseCode = "404", description = "No songs found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> getAllSongs() {
         logger.info(LogUtils.info(CLASS_NAME, "getAllSongs", "Retrieving all songs"));
 
@@ -61,6 +70,10 @@ public class SongController {
     //http://localhost:8082/songs/id
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping(value = "{songId}")
+    @Operation(summary = "Get Song by ID", description = "Retrieve song by its ID")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved song",
+            content = @Content(schema = @Schema(implementation = Song.class)))
+    @ApiResponse(responseCode = "404", description = "Song not found")
     public ResponseEntity<?> getById(@PathVariable Integer songId) {
         logger.info(LogUtils.info(CLASS_NAME, "getById", String.format("(%d)", songId)));
 
@@ -78,6 +91,12 @@ public class SongController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "")
+    @Operation(summary = "Add Song", description = "Add a new song")
+    @ApiResponse(responseCode = "201", description = "Song added successfully",
+            content = @Content(schema = @Schema(implementation = Song.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "409", description = "Bucket already exists")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<Object> add(@Valid @RequestBody Song song, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "add", String.format("(%s)", song)));
 
@@ -117,8 +136,15 @@ public class SongController {
             return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "")
+    @Operation(summary = "Update Song", description = "Update an existing song")
+    @ApiResponse(responseCode = "200", description = "Song updated successfully",
+            content = @Content(schema = @Schema(implementation = Song.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "409", description = "Duplicate entry or data integrity violation")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<Object> update(@Valid @RequestBody Song song, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "update", String.format("(%s)", song)));
 
@@ -150,6 +176,10 @@ public class SongController {
     //http://localhost:8082/songs/id (delete)
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "{songId}")
+    @Operation(summary = "Delete Song", description = "Delete a song by its ID")
+    @ApiResponse(responseCode = "200", description = "Song deleted successfully")
+    @ApiResponse(responseCode = "404", description = "Song not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<Object> deletePV(@PathVariable Integer songId) {
         logger.info(LogUtils.info(CLASS_NAME, "deletePV", String.format("(%d)", songId)));
 

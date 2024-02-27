@@ -39,7 +39,6 @@ public class Instrument extends RepresentationModel<Instrument> implements Seria
     private String createdBy;
 
     @JsonIgnore
-
     @ManyToMany(mappedBy = "instruments")
     Set<Member> members;
 

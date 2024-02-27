@@ -1,6 +1,9 @@
 package at.htlklu.bavi.controller;
 
 
+import at.htlklu.bavi.model.Instrument;
+import at.htlklu.bavi.model.Role;
+import at.htlklu.bavi.model.Song;
 import at.htlklu.bavi.utils.ErrorsUtils;
 import at.htlklu.bavi.utils.LogUtils;
 import at.htlklu.bavi.model.Member;
@@ -8,6 +11,10 @@ import at.htlklu.bavi.repository.MembersRepository;
 import at.htlklu.bavi.repository.SongsRepository;
 import at.htlklu.bavi.repository.RoleRepository;
 import at.htlklu.bavi.repository.InstrumentsRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.apache.logging.log4j.LogManager;
@@ -49,6 +56,11 @@ public class MemberController {
 
     @GetMapping("")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get All Members", description = "Retrieve all members")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved members",
+            content = @Content(schema = @Schema(implementation = Member.class)))
+    @ApiResponse(responseCode = "404", description = "No members found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> getAllMembers() {
         logger.info(LogUtils.info(CLASS_NAME, "getAllMembers", "Retrieving all members"));
 
@@ -71,6 +83,10 @@ public class MemberController {
     //http://localhost:8082/members/id
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "{memberId}")
+    @Operation(summary = "Get Member by ID", description = "Retrieve member by its ID")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved member",
+            content = @Content(schema = @Schema(implementation = Member.class)))
+    @ApiResponse(responseCode = "404", description = "Member not found")
     public ResponseEntity<?> getById(@PathVariable Integer memberId) {
         logger.info(LogUtils.info(CLASS_NAME, "getById", String.format("(%d)", memberId)));
 
@@ -88,8 +104,11 @@ public class MemberController {
 
     //http://localhost:8082/members/id/songs
     @PreAuthorize("hasRole('ADMIN')")
-
     @GetMapping(value = "{memberId}/songs")
+    @Operation(summary = "Get Songs by Member ID", description = "Retrieve songs by member ID")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved songs",
+            content = @Content(schema = @Schema(implementation = Song.class)))
+    @ApiResponse(responseCode = "404", description = "Member not found")
     public ResponseEntity<?> getSongsById(@PathVariable Integer memberId) {
 
         logger.info(LogUtils.info(CLASS_NAME, "getSongsById", String.format("(%d)", memberId)));
@@ -109,8 +128,11 @@ public class MemberController {
 
     //http://localhost:8082/members/id/functions
     @PreAuthorize("hasRole('ADMIN')")
-
     @GetMapping(value = "{memberId}/roles")
+    @Operation(summary = "Get Roles by Member ID", description = "Retrieve roles by member ID")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved roles",
+            content = @Content(schema = @Schema(implementation = Role.class)))
+    @ApiResponse(responseCode = "404", description = "Member not found")
     public ResponseEntity<?> getRolesById(@PathVariable Integer memberId) {
 
         logger.info(LogUtils.info(CLASS_NAME, "getRolesById", String.format("(%d)", memberId)));
@@ -130,8 +152,11 @@ public class MemberController {
 
     //http://localhost:8082/members/id/songs
     @PreAuthorize("hasRole('ADMIN')")
-
     @GetMapping(value = "{memberId}/instruments")
+    @Operation(summary = "Get Instruments by Member ID", description = "Retrieve instruments by member ID")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved instruments",
+            content = @Content(schema = @Schema(implementation = Instrument.class)))
+    @ApiResponse(responseCode = "404", description = "Member not found")
     public ResponseEntity<?> getInstrumentsById(@PathVariable Integer memberId) {
 
         logger.info(LogUtils.info(CLASS_NAME, "getInstrumentsById", String.format("(%d)", memberId)));
@@ -152,6 +177,11 @@ public class MemberController {
     // Einfügen einer neuen Ressource
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("")
+    @Operation(summary = "Add Member", description = "Add a new member")
+    @ApiResponse(responseCode = "200", description = "Member added successfully",
+            content = @Content(schema = @Schema(implementation = Member.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> addMember(@Valid @RequestBody Member member, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "addMember", String.format("(%s)", member)));
         return getResponseEntity(member, bindingResult);
@@ -160,6 +190,11 @@ public class MemberController {
     // Ändern einer vorhandenen Ressource
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("")
+    @Operation(summary = "Update Member", description = "Update an existing member")
+    @ApiResponse(responseCode = "200", description = "Member updated successfully",
+            content = @Content(schema = @Schema(implementation = Member.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> updateMember(@Valid @RequestBody Member member, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "updateMember", String.format("(%s)", member)));
         return getResponseEntity(member, bindingResult);
@@ -187,6 +222,10 @@ public class MemberController {
     // http://localhost:8082/members/id (delete)
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "{memberId}")
+    @Operation(summary = "Delete Member", description = "Delete a member by its ID")
+    @ApiResponse(responseCode = "200", description = "Member deleted successfully")
+    @ApiResponse(responseCode = "404", description = "Member not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> deleteMember(@PathVariable Integer memberId) {
         logger.info(LogUtils.info(CLASS_NAME, "deleteMember", String.format("(%d)", memberId)));
         String errorMessage;

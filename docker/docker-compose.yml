@@ -1,5 +1,3 @@
-
-
 version: '3'
 
 services:
@@ -14,6 +12,7 @@ services:
       - "8082:8082"
     depends_on:
       - mysql
+    restart: always
 
   minio:
     image: minio/minio:latest
@@ -22,11 +21,12 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-     MINIO_ROOT_USER: root
-     MINIO_ROOT_PASSWORD: rootroot
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: rootroot
     command: server --console-address ":9001" /data
     volumes:
       - minio_data:/data
+    restart: always
 
   mysql:
     image: mysql:latest
@@ -39,9 +39,7 @@ services:
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./mysql:/var/lib/mysql
-
-
-
+    restart: always
 
 volumes:
   minio_data:
