@@ -3,18 +3,20 @@ version: '3'
 services:
 
   traefik:
-    image: traefik:v2.5
+    image: traefik:latest # Use the specific version of Traefik you want
     command:
-      - "--api.insecure=true" # Enable API (insecure mode for demo purposes)
-      - "--providers.docker=true" # Enable Docker provider
-      - "--entrypoints.web.address=:80" # Define the entry point
+      - --api.insecure=true # Enable API (insecure mode for demo purposes)
+      - --providers.docker=true # Enable Docker provider
+      - --entrypoints.web.address=:80 # Define the entry point
     ports:
-      - "80:80" # Expose port 80 for HTTP traffic
-      - "8080:8080" # Expose port 8080 for Traefik dashboard
+      - 80:80 # Expose port 80 for HTTP traffic
+      - 8080:8080 # Expose port 8080 for Traefik dashboard
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock" # Mount Docker socket to communicate with Docker API
+      - /var/run/docker.sock:/var/run/docker.sock # Mount Docker socket to communicate with Docker API
     networks:
-     -frontnet
+      - frontnet
+      - backnet # Add Traefik to the same networks as your services
+    restart: always
 
   backend:
     image: maven:3.9.6-amazoncorretto-21
@@ -22,8 +24,6 @@ services:
     entrypoint: sh -c "cd /app  && mvn clean package spring-boot:repackage && java -jar /app/target/bavi-1.0.0.jar"
     volumes:
       - ../:/app
-    #ports:
-     # - "8082:8082"
     depends_on:
       - mysql
       - minio
@@ -34,16 +34,14 @@ services:
     expose:
       - 8082
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.bavi_server.rule=Host(`localhost:8082`)"
-      - "traefik.http.services.bavi_server.loadbalancer.server.port=80"
+      - traefik.enable=true
+      - traefik.http.routers.bavi_server.rule=PathPrefix(`/`) # Route all requests to this service
+      - traefik.http.services.bavi_server.loadbalancer.server.port=8082
+
 
   minio:
     image: minio/minio:latest
     container_name: minio_server
-    #ports:
-     # - "9000:9000"
-    #- "9001:9001"
     environment:
       MINIO_ROOT_USER: root
       MINIO_ROOT_PASSWORD: rootroot
@@ -59,8 +57,6 @@ services:
   mysql:
     image: mysql:latest
     container_name: mysql_server
-    #ports:
-    # - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: BAVI
