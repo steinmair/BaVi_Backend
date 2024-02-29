@@ -43,6 +43,8 @@ public class Member extends RepresentationModel<Member> implements Serializable 
     @DateTimeFormat(pattern = "dd.MM.yyyy")
     private LocalDate birthdate;
     private String phone;
+    @NotNull
+    @Column(unique = true)
     @Email
     private String email;
     //@JsonIgnore

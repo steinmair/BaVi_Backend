@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `BAVI`.`Member` (
                                                `SURNAME` VARCHAR(250) NOT NULL,
                                                `BIRTHDATE` DATE NULL DEFAULT NULL,
                                                `PHONE` VARCHAR(45) NULL DEFAULT NULL,
-                                               `EMAIL` VARCHAR(200) NULL DEFAULT NULL,
+                                               `EMAIL` VARCHAR(200) UNIQUE NOT NULL ,
                                                `PASSWORD` VARCHAR(200) NULL DEFAULT NULL,
                                                `HOUSE_NUMBER` INT NULL DEFAULT NULL,
                                                `DATE_JOINED` DATETIME NOT NULL,
