@@ -1,10 +1,15 @@
 package at.htlklu.bavi.controller;
 
+import at.htlklu.bavi.model.Song;
 import at.htlklu.bavi.utils.ErrorsUtils;
 import at.htlklu.bavi.utils.LogUtils;
 import at.htlklu.bavi.model.Composer;
 import at.htlklu.bavi.repository.ComposersRepository;
 import at.htlklu.bavi.repository.SongsRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,6 +43,11 @@ public class ComposerController {
     //http://localhost:8082/composers
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("")
+    @Operation(summary = "Get All Composers", description = "Retrieve all composers")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved composers",
+            content = @Content(schema = @Schema(implementation = Composer.class)))
+    @ApiResponse(responseCode = "404", description = "No composers found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> getAllComposers() {
         logger.info(LogUtils.info(CLASS_NAME, "getAllComposers", "Retrieving all composers"));
 
@@ -60,6 +70,10 @@ public class ComposerController {
     //http://localhost:8082/composers/id
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping(value = "{composerId}")
+    @Operation(summary = "Get Composer by ID", description = "Retrieve composer by its ID")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved composer",
+            content = @Content(schema = @Schema(implementation = Composer.class)))
+    @ApiResponse(responseCode = "404", description = "Composer not found")
     public ResponseEntity<?> getById(@PathVariable Integer composerId) {
         logger.info(LogUtils.info(CLASS_NAME, "getComposerById", String.format("(%d)", composerId)));
 
@@ -77,8 +91,11 @@ public class ComposerController {
 
     //http://localhost:8082/composers/id/songs
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-
     @GetMapping(value = "{composerId}/songs")
+    @Operation(summary = "Get Songs by Composer ID", description = "Retrieve songs by composer ID")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved songs",
+            content = @Content(schema = @Schema(implementation = Song.class)))
+    @ApiResponse(responseCode = "404", description = "Composer not found")
     public ResponseEntity<?> getSongsByComposerId(@PathVariable Integer composerId) {
 
         logger.info(LogUtils.info(CLASS_NAME, "getSongsByComposerId", String.format("(%d)", composerId)));
@@ -98,6 +115,11 @@ public class ComposerController {
     // einfügen einer neuen Ressource
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("")
+    @Operation(summary = "Add Composer", description = "Add a new composer")
+    @ApiResponse(responseCode = "200", description = "Composer added successfully",
+            content = @Content(schema = @Schema(implementation = Composer.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> addComposer(@Valid @RequestBody Composer composer, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "addComposer", String.format("(%s)", composer)));
 
@@ -107,6 +129,11 @@ public class ComposerController {
     // ändern einer vorhandenen Ressource
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("")
+    @Operation(summary = "Update Composer", description = "Update an existing composer")
+    @ApiResponse(responseCode = "200", description = "Composer updated successfully",
+            content = @Content(schema = @Schema(implementation = Composer.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> updateComposer(@Valid @RequestBody Composer composer, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "updateComposer", String.format("(%s)", composer)));
 
@@ -133,6 +160,10 @@ public class ComposerController {
     //http://localhost:8082/composers/id (delete)
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "{composerId}")
+    @Operation(summary = "Delete Composer", description = "Delete a composer by its ID")
+    @ApiResponse(responseCode = "200", description = "Composer deleted successfully")
+    @ApiResponse(responseCode = "404", description = "Composer not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> deleteComposer(@PathVariable Integer composerId) {
         logger.info(LogUtils.info(CLASS_NAME, "deleteComposer", String.format("(%d)", composerId)));
         String errorMessage;

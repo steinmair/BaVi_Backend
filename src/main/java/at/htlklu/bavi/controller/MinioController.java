@@ -3,6 +3,8 @@ package at.htlklu.bavi.controller;
 import at.htlklu.bavi.minio.MinioBucketExistsException;
 import at.htlklu.bavi.minio.MinioService;
 import at.htlklu.bavi.minio.MinioServiceException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 
@@ -26,6 +28,9 @@ public class MinioController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("{archivNumber}/upload")
+    @Operation(summary = "Upload File", description = "Upload a file to the specified song")
+    @ApiResponse(responseCode = "200", description = "File uploaded successfully")
+    @ApiResponse(responseCode = "400", description = "Failed to upload file")
     public ResponseEntity<String> uploadFile(@PathVariable String archivNumber, @RequestParam("file") MultipartFile file) {
         try {
             minioService.uploadFile(archivNumber, file.getOriginalFilename(), file.getInputStream(), file.getContentType());
@@ -37,6 +42,9 @@ public class MinioController {
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("{archivNumber}/{file}/download")
+    @Operation(summary = "Download File", description = "Download a file from a specified song")
+    @ApiResponse(responseCode = "200", description = "File downloaded successfully")
+    @ApiResponse(responseCode = "400", description = "Failed to download file")
     public ResponseEntity<ByteArrayResource> downloadFile(@PathVariable String archivNumber, @PathVariable String file) {
         try {
             ByteArrayResource resource = minioService.downloadFile(archivNumber, file);
@@ -52,6 +60,9 @@ public class MinioController {
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("{archivNumber}/list")
+    @Operation(summary = "List song files", description = "List a file from the specified song")
+    @ApiResponse(responseCode = "200", description = "Files listed successfully")
+    @ApiResponse(responseCode = "400", description = "Failed to list files")
     public ResponseEntity<List<String>> listFiles(@PathVariable String archivNumber) {
         try {
             List<String> objectNames = minioService.listFiles(archivNumber);
@@ -65,6 +76,9 @@ public class MinioController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("{archivNumber}/{file}/delete")
+    @Operation(summary = "Delete File", description = "Upload a file to the specified archive number")
+    @ApiResponse(responseCode = "200", description = "Files listed successfully")
+    @ApiResponse(responseCode = "400", description = "Failed to list files")
     public ResponseEntity<String> deleteFile(@PathVariable String archivNumber, @PathVariable String file) {
         try {
             minioService.deleteFile(archivNumber, file);
@@ -76,8 +90,10 @@ public class MinioController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-
     @PostMapping("{archivNumber}/createBucket")
+    @Operation(summary = "Create Bucket", description = "Create a Bucket")
+    @ApiResponse(responseCode = "200", description = "Bucket created successfully")
+    @ApiResponse(responseCode = "400", description = "Failed to create a Bucket")
     public ResponseEntity<String> createBucket(@PathVariable String archivNumber) {
         try {
             minioService.createBucket(archivNumber);
@@ -92,6 +108,9 @@ public class MinioController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("{archivNumber}/deleteBucket")
+    @Operation(summary = "Delete Bucket", description = "Delete Bucket")
+    @ApiResponse(responseCode = "200", description = "Deleted successfully")
+    @ApiResponse(responseCode = "400", description = "Failed to Delete Bucket")
     public ResponseEntity<String> deleteBucket(@PathVariable String archivNumber) {
         try {
             minioService.deleteBucket(archivNumber);

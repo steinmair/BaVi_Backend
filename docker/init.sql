@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `BAVI`.`Member` (
                                                `SURNAME` VARCHAR(250) NOT NULL,
                                                `BIRTHDATE` DATE NULL DEFAULT NULL,
                                                `PHONE` VARCHAR(45) NULL DEFAULT NULL,
-                                               `EMAIL` VARCHAR(200) NULL DEFAULT NULL,
+                                               `EMAIL` VARCHAR(200) UNIQUE NOT NULL ,
                                                `PASSWORD` VARCHAR(200) NULL DEFAULT NULL,
                                                `HOUSE_NUMBER` INT NULL DEFAULT NULL,
                                                `DATE_JOINED` DATETIME NOT NULL,
@@ -184,4 +184,12 @@ CREATE TABLE IF NOT EXISTS `BAVI`.`MemberRole` (
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+INSERT INTO  Member (FIRSTNAME, SURNAME, EMAIL, PASSWORD, DATE_JOINED, CREATED_BY)
+VALUES ('admin','admin','admin@gmail.com','$2a$10$yKxUcLcaIV9gZq/bPqARDuihq4vbod2wByHY.zhwdSa6z1OkZJmSu',NOW(),'system');
+
+INSERT INTO Role(NAME, CREATED_BY)
+VALUES ('ROLE_ADMIN','system');
+
+INSERT INTO MemberRole(MEMBER_ID, ROLE_ID) VALUES (1,1);
 

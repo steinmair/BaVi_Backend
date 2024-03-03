@@ -7,6 +7,11 @@ import java.util.stream.Collectors;
 import at.htlklu.bavi.repository.RoleRepository;
 import at.htlklu.bavi.repository.MembersRepository;
 import at.htlklu.bavi.utils.LogUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,6 +58,10 @@ public class AuthController {
     JwtUtils jwtUtils;
 
     @PostMapping("login")
+    @Operation(summary = "Authenticate User", description = "Endpoint to authenticate a user.")
+    @ApiResponse(responseCode = "200", description = "User authenticated successfully",
+            content = @Content(schema = @Schema(implementation = JwtResponse.class)))
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
 
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 

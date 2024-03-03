@@ -1,10 +1,15 @@
 package at.htlklu.bavi.controller;
 
+import at.htlklu.bavi.model.Member;
 import at.htlklu.bavi.utils.ErrorsUtils;
 import at.htlklu.bavi.utils.LogUtils;
 import at.htlklu.bavi.model.Instrument;
 import at.htlklu.bavi.repository.InstrumentsRepository;
 import at.htlklu.bavi.repository.MembersRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.apache.logging.log4j.LogManager;
@@ -36,6 +41,11 @@ public class InstrumentController {
     //http://localhost:8082/instruments
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("")
+    @Operation(summary = "Get All Instruments", description = "Retrieve all instruments")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved instruments",
+            content = @Content(schema = @Schema(implementation = Instrument.class)))
+    @ApiResponse(responseCode = "404", description = "No instruments found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> getAllInstruments() {
         logger.info(LogUtils.info(CLASS_NAME, "getAllInstruments", "Retrieving all instruments"));
 
@@ -58,6 +68,10 @@ public class InstrumentController {
     //http://localhost:8082/instruments/id
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping(value = "{instrumentId}")
+    @Operation(summary = "Get Instrument by ID", description = "Retrieve instrument by its ID")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved instrument",
+            content = @Content(schema = @Schema(implementation = Instrument.class)))
+    @ApiResponse(responseCode = "404", description = "Instrument not found")
     public ResponseEntity<?> getById(@PathVariable Integer instrumentId) {
         logger.info(LogUtils.info(CLASS_NAME, "getById", String.format("(%d)", instrumentId)));
 
@@ -76,6 +90,10 @@ public class InstrumentController {
     //http://localhost:8082/instruments/id/members
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "{instrumentId}/members")
+    @Operation(summary = "Get Members by Instrument ID", description = "Retrieve members by instrument ID")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved members",
+            content = @Content(schema = @Schema(implementation = Member.class)))
+    @ApiResponse(responseCode = "404", description = "Instrument not found")
     public ResponseEntity<?> getMembersByInstrumentsId(@PathVariable Integer instrumentId) {
 
         logger.info(LogUtils.info(CLASS_NAME, "getMembersByInstrumentsId", String.format("(%d)", instrumentId)));
@@ -95,6 +113,11 @@ public class InstrumentController {
     // einfügen einer neuen Ressource
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("")
+    @Operation(summary = "Add Instrument", description = "Add a new instrument")
+    @ApiResponse(responseCode = "200", description = "Instrument added successfully",
+            content = @Content(schema = @Schema(implementation = Instrument.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> addInstrument(@Valid @RequestBody Instrument instrument, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "addInstrument", String.format("(%s)", instrument)));
         return getResponseEntity(instrument, bindingResult);
@@ -103,6 +126,11 @@ public class InstrumentController {
     // ändern einer vorhandenen Ressource
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("")
+    @Operation(summary = "Update Instrument", description = "Update an existing instrument")
+    @ApiResponse(responseCode = "200", description = "Instrument updated successfully",
+            content = @Content(schema = @Schema(implementation = Instrument.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> updateInstrument(@Valid @RequestBody Instrument instrument, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "updateInstrument", String.format("(%s)", instrument)));
         return getResponseEntity(instrument, bindingResult);
@@ -128,6 +156,10 @@ public class InstrumentController {
     //http://localhost:8082/instruments/id (delete)
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "{instrumentId}")
+    @Operation(summary = "Delete Instrument", description = "Delete an instrument by its ID")
+    @ApiResponse(responseCode = "200", description = "Instrument deleted successfully")
+    @ApiResponse(responseCode = "404", description = "Instrument not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> deleteInstrument(@PathVariable Integer instrumentId) {
         logger.info(LogUtils.info(CLASS_NAME, "deleteInstrument", String.format("(%d)", instrumentId)));
         String errorMessage;

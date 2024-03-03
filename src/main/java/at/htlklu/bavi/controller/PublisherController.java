@@ -1,10 +1,15 @@
 package at.htlklu.bavi.controller;
 
+import at.htlklu.bavi.model.Song;
 import at.htlklu.bavi.utils.ErrorsUtils;
 import at.htlklu.bavi.utils.LogUtils;
 import at.htlklu.bavi.model.Publisher;
 import at.htlklu.bavi.repository.PublishersRepository;
 import at.htlklu.bavi.repository.SongsRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.apache.logging.log4j.LogManager;
@@ -37,6 +42,11 @@ public class PublisherController {
     //http://localhost:8082/publishers
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("")
+    @Operation(summary = "Get All Publishers", description = "Retrieve all publishers")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved publishers",
+            content = @Content(schema = @Schema(implementation = Publisher.class)))
+    @ApiResponse(responseCode = "404", description = "No publishers found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> getAllPublishers() {
         logger.info(LogUtils.info(CLASS_NAME, "getAllPublishers", "Retrieving all publishers"));
 
@@ -59,6 +69,10 @@ public class PublisherController {
     //http://localhost:8082/publishers/id
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping(value = "{publisherId}")
+    @Operation(summary = "Get Publisher by ID", description = "Retrieve publisher by its ID")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved publisher",
+            content = @Content(schema = @Schema(implementation = Publisher.class)))
+    @ApiResponse(responseCode = "404", description = "Publisher not found")
     public ResponseEntity<?> getById(@PathVariable Integer publisherId) {
         logger.info(LogUtils.info(CLASS_NAME, "getById", String.format("(%d)", publisherId)));
 
@@ -77,6 +91,10 @@ public class PublisherController {
     //http://localhost:8082/publishers/id/songs
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping(value = "{publisherId}/songs")
+    @Operation(summary = "Get Songs by Publisher ID", description = "Retrieve songs by publisher ID")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved songs",
+            content = @Content(schema = @Schema(implementation = Song.class)))
+    @ApiResponse(responseCode = "404", description = "Publisher not found")
     public ResponseEntity<?> getSongsById(@PathVariable Integer publisherId) {
 
         logger.info(LogUtils.info(CLASS_NAME, "getSongsById", String.format("(%d)", publisherId)));
@@ -97,6 +115,10 @@ public class PublisherController {
     // Einfügen einer neuen Ressource
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("")
+    @ApiResponse(responseCode = "200", description = "Publisher added successfully",
+            content = @Content(schema = @Schema(implementation = Publisher.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> addPublisher(@Valid @RequestBody Publisher publisher, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "addPublisher", String.format("(%s)", publisher)));
         return getResponseEntity(publisher, bindingResult);
@@ -105,6 +127,11 @@ public class PublisherController {
     // Ändern einer vorhandenen Ressource
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("")
+    @Operation(summary = "Update Publisher", description = "Update an existing publisher")
+    @ApiResponse(responseCode = "200", description = "Publisher updated successfully",
+            content = @Content(schema = @Schema(implementation = Publisher.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> updatePublisher(@Valid @RequestBody Publisher publisher, BindingResult bindingResult) {
         logger.info(LogUtils.info(CLASS_NAME, "updatePublisher", String.format("(%s)", publisher)));
         return getResponseEntity(publisher, bindingResult);
@@ -129,6 +156,10 @@ public class PublisherController {
     // http://localhost:8082/publishers/id (delete)
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "{publisherId}")
+    @Operation(summary = "Delete Publisher", description = "Delete a publisher by its ID")
+    @ApiResponse(responseCode = "200", description = "Publisher deleted successfully")
+    @ApiResponse(responseCode = "404", description = "Publisher not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> deletePublisher(@PathVariable Integer publisherId) {
         logger.info(LogUtils.info(CLASS_NAME, "deletePublisher", String.format("(%d)", publisherId)));
         String errorMessage;
