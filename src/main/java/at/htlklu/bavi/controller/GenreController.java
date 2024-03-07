@@ -20,8 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +30,6 @@ public class GenreController {
 
     private static final Logger logger = LogManager.getLogger(GenreController.class);
     private static final String CLASS_NAME = "GenreController";
-
     @Autowired
     GenresRepository genresRepository;
     @Autowired
@@ -48,18 +45,19 @@ public class GenreController {
     @ApiResponse(responseCode = "404", description = "No genres found")
     @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> getAllGenres() {
-        logger.info(LogUtils.info(CLASS_NAME, "getAllGenres", "Retrieving all genres"));
-
+        logger.info("Retrieving all genres");
         ResponseEntity<?> result;
         try {
             List<Genre> genres = genresRepository.findAll();
             if (!genres.isEmpty()) {
+                logger.debug("Retrieved {} genres", genres.size());
                 result = new ResponseEntity<>(genres, HttpStatus.OK);
             } else {
+                logger.info("No genres found");
                 result = new ResponseEntity<>("No genres found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error retrieving genres: {}", e.getMessage());
             String errorMessage = ErrorsUtils.getErrorMessage(e);
             result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -74,16 +72,17 @@ public class GenreController {
             content = @Content(schema = @Schema(implementation = Genre.class)))
     @ApiResponse(responseCode = "404", description = "Genre not found")
     public ResponseEntity<?> getByIdPV(@PathVariable Integer genreId) {
-        logger.info(LogUtils.info(CLASS_NAME, "getByIdPV", String.format("(%d)", genreId)));
+        logger.info("Retrieving genre with ID: {}", genreId);
 
         ResponseEntity<?> result;
         Optional<Genre> optionalGenre = genresRepository.findById(genreId);
         if (optionalGenre.isPresent()) {
-
             Genre genre = optionalGenre.get();
+            logger.debug("Retrieved genre: {}", genre);
             result = new ResponseEntity<>(genre, HttpStatus.OK);
         } else {
-            result = new ResponseEntity<>(String.format("Genre mit der Id = %d nicht vorhanden", genreId), HttpStatus.NOT_FOUND);
+            logger.info("Genre not found: {}", genreId);
+            result = new ResponseEntity<>(String.format("Genre not found (%d)", genreId), HttpStatus.NOT_FOUND);
         }
         return result;
     }
@@ -96,20 +95,18 @@ public class GenreController {
             content = @Content(schema = @Schema(implementation = Song.class)))
     @ApiResponse(responseCode = "404", description = "Genre not found")
     public ResponseEntity<?> getSongsById(@PathVariable Integer genreId) {
-
-        logger.info(LogUtils.info(CLASS_NAME, "getSongsById", String.format("(%d)", genreId)));
-
+        logger.info("Retrieving songs for genre with ID: {}", genreId);
         ResponseEntity<?> result;
         Optional<Genre> optionalGenre = genresRepository.findById(genreId);
         if (optionalGenre.isPresent()) {
-
             Genre genre = optionalGenre.get();
+            logger.debug("Retrieved genre: {}", genre);
             result = new ResponseEntity<>(genre.getSongs(), HttpStatus.OK);
         } else {
-            result = new ResponseEntity<>(String.format("Genre mit der Id = %d nicht vorhanden", genreId), HttpStatus.NOT_FOUND);
+            logger.info("Genre not found: {}", genreId);
+            result = new ResponseEntity<>(String.format("Genre not found (%d)", genreId), HttpStatus.NOT_FOUND);
         }
         return result;
-
     }
 
     // Einfügen einer neuen Ressource
@@ -141,14 +138,15 @@ public class GenreController {
     @NotNull
     private ResponseEntity<?> getResponseEntity(@RequestBody @Valid Genre genre, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
+            logger.error("Validation errors occurred: {}", bindingResult.getAllErrors());
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-
         try {
             Genre savedGenre = genresRepository.save(genre);
+            logger.info("Saved genre: {}", savedGenre);
             return new ResponseEntity<>(savedGenre, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace(); // Consider logging the exception
+            logger.error("Error saving genre: {}", e.getMessage());
             String errorMessage = e.getCause().getCause().getLocalizedMessage();
             return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -162,27 +160,22 @@ public class GenreController {
     @ApiResponse(responseCode = "404", description = "Genre not found")
     @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> deleteGenre(@PathVariable Integer genreId) {
-        logger.info(LogUtils.info(CLASS_NAME, "deleteGenre", String.format("(%d)", genreId)));
-        String errorMessage;
-        ResponseEntity<?> result;
-        Genre genre;
-
+        logger.info("Deleting genre with ID: {}", genreId);
         Optional<Genre> optionalGenre = genresRepository.findById(genreId);
-        if (optionalGenre.isPresent()) {
-            genre = optionalGenre.get();
-        } else {
+        if (optionalGenre.isEmpty()) {
+            logger.info("Genre not found: {}", genreId);
             return new ResponseEntity<>("Genre not found", HttpStatus.NOT_FOUND);
         }
-
+        Genre genre = optionalGenre.get();
         try {
             genresRepository.delete(genre);
-            result = new ResponseEntity<>(genre, HttpStatus.OK);
+            logger.info("Deleted genre: {}", genre);
+            return new ResponseEntity<>(genre, HttpStatus.OK);
         } catch (Exception e) {
-            errorMessage = ErrorsUtils.getErrorMessage(e);
-            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Error deleting genre: {}", e.getMessage());
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return result;
     }
 
 

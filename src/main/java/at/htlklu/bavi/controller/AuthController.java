@@ -2,8 +2,6 @@ package at.htlklu.bavi.controller;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-
 import at.htlklu.bavi.repository.RoleRepository;
 import at.htlklu.bavi.repository.MembersRepository;
 import at.htlklu.bavi.utils.LogUtils;
@@ -11,7 +9,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,63 +25,60 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import at.htlklu.bavi.payload.request.LoginRequest;
 import at.htlklu.bavi.payload.response.JwtResponse;
 import at.htlklu.bavi.Security.jwt.JwtUtils;
 import at.htlklu.bavi.Security.services.UserDetailsImpl;
 
-
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("")
 public class AuthController {
-
     private static final Logger logger = LogManager.getLogger(AuthController.class);
     private static final String CLASS_NAME = "AuthController";
+    // Spring Security's AuthenticationManager
     @Autowired
     AuthenticationManager authenticationManager;
-
+    // Repository for accessing Member data
     @Autowired
     MembersRepository membersRepository;
-
+    // Repository for accessing Role data
     @Autowired
     RoleRepository roleRepository;
-
+    // Password encoder for encoding passwords
     @Autowired
     PasswordEncoder encoder;
-
+    // Utility class for JWT operations
     @Autowired
     JwtUtils jwtUtils;
-
+    // Endpoint for authenticating user login
     @PostMapping("login")
     @Operation(summary = "Authenticate User", description = "Endpoint to authenticate a user.")
     @ApiResponse(responseCode = "200", description = "User authenticated successfully",
             content = @Content(schema = @Schema(implementation = JwtResponse.class)))
     @ApiResponse(responseCode = "401", description = "Unauthorized")
-
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-
-        logger.info(LogUtils.info(CLASS_NAME, "authenticateUser", String.format("loginRequest (%s)",loginRequest.getEmail())));
-
-
+        // Logging the authentication attempt
+        logger.info(LogUtils.info(CLASS_NAME, "authenticateUser", String.format("loginRequest (%s)", loginRequest.getEmail())));
+        // Attempting authentication using Spring Security's AuthenticationManager
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-
+        // Setting the authenticated authentication object in SecurityContextHolder
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Generating JWT token
         String jwt = jwtUtils.generateJwtToken(authentication);
-
+        // Retrieving UserDetails from the authenticated authentication object
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        // Retrieving roles associated with the authenticated user
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-
-        logger.info(LogUtils.info(CLASS_NAME, "authenticateUser", String.format("User authenticated successfully (%s)",jwt)));
-
+        // Logging successful authentication
+        logger.info(LogUtils.info(CLASS_NAME, "authenticateUser", String.format("User authenticated successfully (%s)", jwt)));
+        // Returning JWT response with user details and roles
         return ResponseEntity.ok(new JwtResponse(jwt,
                 userDetails.memberId(),
                 userDetails.eMail(),
                 roles));
-
     }
 }

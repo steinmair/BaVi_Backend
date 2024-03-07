@@ -56,6 +56,11 @@ services:
       - backnet
     expose:
       - 9000
+      - 9001
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.minio_server.rule=PathPrefix(`/minio`)
+      - traefik.http.services.minio_server.loadbalancer.server.port=9000
 
   mysql:
     image: mysql:latest
@@ -73,7 +78,10 @@ services:
       - backnet
     expose:
       - 3306
-
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.mysql_server.rule=PathPrefix(`/mysql`)
+      - traefik.http.services.mysql_server.loadbalancer.server.port=3306
 volumes:
   minio_data:
     driver: local

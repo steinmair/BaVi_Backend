@@ -16,7 +16,7 @@ import java.util.Date;
 
 @Component
 public class JwtUtils {
-  private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+  public static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
   @Value("${BAVI.app.jwtSecret}")
   private String jwtSecret;
@@ -25,15 +25,29 @@ public class JwtUtils {
   private int jwtExpirationMs;
 
   public String generateJwtToken(Authentication authentication) {
-
     UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
-    return Jwts.builder()
-        .setSubject((userPrincipal.eMail()))
-        .setIssuedAt(new Date())
-        .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-        .signWith(key(), SignatureAlgorithm.HS256)
-        .compact();
+    // Log the user email for which the token is being generated
+    logger.info("Generating JWT token for user: {}", userPrincipal.geteMail());
+
+    try {
+      // Build the JWT token
+      String jwtToken = Jwts.builder()
+              .setSubject(userPrincipal.geteMail())
+              .setIssuedAt(new Date())
+              .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+              .signWith(key(), SignatureAlgorithm.HS256)
+              .compact();
+
+      // Log successful token generation
+      logger.debug("JWT token generated successfully for user: {}", userPrincipal.geteMail());
+
+      return jwtToken;
+    } catch (Exception e) {
+      // Log any exceptions that occur during token generation
+      logger.error("Error generating JWT token for user: {}", userPrincipal.geteMail(), e);
+      throw e; // Rethrow the exception after logging
+    }
   }
   
   private Key key() {

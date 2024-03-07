@@ -20,8 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-
 import java.util.List;
 import java.util.Optional;
 
@@ -50,20 +48,20 @@ public class PublisherController {
     public ResponseEntity<?> getAllPublishers() {
         logger.info(LogUtils.info(CLASS_NAME, "getAllPublishers", "Retrieving all publishers"));
 
-        ResponseEntity<?> result;
         try {
-            List<Publisher> publisher = publishersRepository.findAll();
-            if (!publisher.isEmpty()) {
-                result = new ResponseEntity<>(publisher, HttpStatus.OK);
+            List<Publisher> publishers = publishersRepository.findAll();
+            if (!publishers.isEmpty()) {
+                logger.debug("Retrieved {} publishers", publishers.size());
+                return ResponseEntity.ok().body(publishers);
             } else {
-                result = new ResponseEntity<>("No publishers found", HttpStatus.NOT_FOUND);
+                logger.info("No publishers found");
+                return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error retrieving publishers: {}", e.getMessage());
             String errorMessage = ErrorsUtils.getErrorMessage(e);
-            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
         }
-        return result;
     }
 
     //http://localhost:8082/publishers/id
@@ -76,16 +74,21 @@ public class PublisherController {
     public ResponseEntity<?> getById(@PathVariable Integer publisherId) {
         logger.info(LogUtils.info(CLASS_NAME, "getById", String.format("(%d)", publisherId)));
 
-        ResponseEntity<?> result;
-        Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
-        if (optionalPublisher.isPresent()) {
-
-            Publisher publisher = optionalPublisher.get();
-            result = new ResponseEntity<>(publisher, HttpStatus.OK);
-        } else {
-            result = new ResponseEntity<>(String.format("Publisher mit der Id = %d nicht vorhanden", publisherId), HttpStatus.NOT_FOUND);
+        try {
+            Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
+            if (optionalPublisher.isPresent()) {
+                Publisher publisher = optionalPublisher.get();
+                logger.debug("Retrieved publisher: {}", publisher);
+                return ResponseEntity.ok().body(publisher);
+            } else {
+                logger.info("Publisher not found: {}", publisherId);
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            logger.error("Error retrieving publisher {}: {}", publisherId, e.getMessage());
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
         }
-        return result;
     }
 
     //http://localhost:8082/publishers/id/songs
@@ -96,20 +99,23 @@ public class PublisherController {
             content = @Content(schema = @Schema(implementation = Song.class)))
     @ApiResponse(responseCode = "404", description = "Publisher not found")
     public ResponseEntity<?> getSongsById(@PathVariable Integer publisherId) {
-
         logger.info(LogUtils.info(CLASS_NAME, "getSongsById", String.format("(%d)", publisherId)));
 
-        ResponseEntity<?> result;
-        Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
-        if (optionalPublisher.isPresent()) {
-
-            Publisher publisher = optionalPublisher.get();
-            result = new ResponseEntity<>(publisher.getSongs(), HttpStatus.OK);
-        } else {
-            result = new ResponseEntity<>(String.format("Publisher mit der Id = %d nicht vorhanden", publisherId), HttpStatus.NOT_FOUND);
+        try {
+            Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
+            if (optionalPublisher.isPresent()) {
+                Publisher publisher = optionalPublisher.get();
+                logger.debug("Retrieved songs for publisher: {}", publisher);
+                return ResponseEntity.ok().body(publisher.getSongs());
+            } else {
+                logger.info("Publisher not found: {}", publisherId);
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            logger.error("Error retrieving songs for publisher {}: {}", publisherId, e.getMessage());
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
         }
-        return result;
-
     }
 
     // Einfügen einer neuen Ressource
@@ -140,14 +146,16 @@ public class PublisherController {
     @NotNull
     private ResponseEntity<?> getResponseEntity(@RequestBody @Valid Publisher publisher, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
+            logger.error("Validation errors occurred: {}", bindingResult.getAllErrors());
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
 
         try {
             Publisher savedPublisher = publishersRepository.save(publisher);
+            logger.info("Saved publisher: {}", savedPublisher);
             return new ResponseEntity<>(savedPublisher, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace(); // Consider logging the exception
+            logger.error("Error saving publisher: {}", e.getMessage());
             String errorMessage = e.getCause().getCause().getLocalizedMessage();
             return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -164,19 +172,20 @@ public class PublisherController {
         logger.info(LogUtils.info(CLASS_NAME, "deletePublisher", String.format("(%d)", publisherId)));
         String errorMessage;
         ResponseEntity<?> result;
-        Publisher publisher;
-
-        Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
-        if (optionalPublisher.isPresent()) {
-            publisher = optionalPublisher.get();
-        } else {
-            return new ResponseEntity<>("Publisher not found", HttpStatus.NOT_FOUND);
-        }
 
         try {
-            publishersRepository.delete(publisher);
-            result = new ResponseEntity<>(publisher, HttpStatus.OK);
+            Optional<Publisher> optionalPublisher = publishersRepository.findById(publisherId);
+            if (optionalPublisher.isPresent()) {
+                Publisher publisher = optionalPublisher.get();
+                publishersRepository.delete(publisher);
+                logger.info("Deleted publisher: {}", publisher);
+                result = new ResponseEntity<>(publisher, HttpStatus.OK);
+            } else {
+                logger.info("Publisher not found: {}", publisherId);
+                result = new ResponseEntity<>("Publisher not found", HttpStatus.NOT_FOUND);
+            }
         } catch (Exception e) {
+            logger.error("Error deleting publisher {}: {}", publisherId, e.getMessage());
             errorMessage = ErrorsUtils.getErrorMessage(e);
             result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }

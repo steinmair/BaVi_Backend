@@ -46,11 +46,16 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                logger.debug("User successfully authenticated: {}", email);
+            } else {
+                logger.debug("JWT token is not valid or missing");
             }
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e);
+            // Log any exceptions that occur during authentication
+            logger.error("Error setting user authentication: {}", e.getMessage(), e);
         }
 
+        // Continue with the filter chain
         filterChain.doFilter(request, response);
     }
 
