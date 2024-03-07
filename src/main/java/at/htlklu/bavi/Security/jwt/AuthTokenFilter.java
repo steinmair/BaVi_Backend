@@ -48,7 +48,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 logger.debug("User successfully authenticated: {}", email);
             } else {
-                logger.debug("JWT token is not valid or missing");
+                logger.warn("JWT token is not valid or missing");
             }
         } catch (Exception e) {
             // Log any exceptions that occur during authentication

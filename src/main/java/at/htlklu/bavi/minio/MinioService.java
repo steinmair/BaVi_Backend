@@ -37,9 +37,8 @@ public class MinioService {
                 Item item = result.get();
                 objectNames.add(item.objectName());
             }
-            logger.info("Listed files in bucket: {}", bucketName);
+            logger.debug("Listed files in bucket: {}", bucketName);
         } catch (Exception e) {
-            logger.error("Error listing files in bucket: {}", bucketName, e);
             throw new MinioServiceException("Error listing files in bucket: " + bucketName, e);
         }
         return objectNames;
@@ -52,14 +51,13 @@ public class MinioService {
         // Check if the file already exists, if so, delete it first
         try {
             if (minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(objectName).build()) != null) {
-                logger.info("File {} already exists in bucket {}, deleting it first", objectName, bucketName);
+                logger.warn("File {} already exists in bucket {}, deleting it first", objectName, bucketName);
                 deleteFile(bucketName, objectName);
             }
         } catch (ErrorResponseException ere) {
             // Object does not exist, no need to delete
         } catch (Exception e) {
-            logger.error("Error checking if file {} exists in bucket {}", objectName, bucketName, e);
-            throw new MinioServiceException("Error uploading file to bucket: " + bucketName, e);
+            throw new MinioServiceException("Error uploading " + objectName + " to bucket: " + bucketName,e);
         }
 
         try {
@@ -71,10 +69,9 @@ public class MinioService {
                     .stream(inputStream, inputStream.available(), -1)
                     .contentType(contentType)
                     .build());
-            logger.info("File {} uploaded successfully to bucket {}", objectName, bucketName);
+            logger.debug("File {} uploaded successfully to bucket {}", objectName, bucketName);
         } catch (Exception e) {
-            logger.error("Error uploading file {} to bucket {}", objectName, bucketName, e);
-            throw new MinioServiceException("Error uploading file to bucket: " + bucketName, e);
+            throw new MinioServiceException("Error uploading file to bucket: " + bucketName + ", object: " + objectName, e);
         }
     }
 
@@ -90,11 +87,10 @@ public class MinioService {
 
             byte[] content = IOUtils.toByteArray(inputStream);
 
-            logger.info("Downloaded file from bucket: {}, object: {}", bucketName, objectName);
+            logger.debug("Downloaded file from bucket: {}, object: {}", bucketName, objectName);
 
             return new ByteArrayResource(content);
         } catch (Exception e) {
-            logger.error("Error downloading file from bucket: {}, object: {}", bucketName, objectName, e);
             throw new RuntimeException("Error downloading file from bucket: " + bucketName + ", object: " + objectName, e);
         }
     }
@@ -108,9 +104,8 @@ public class MinioService {
                     .object(objectName)
                     .build());
 
-            logger.info("Deleted file from bucket: {}, object: {}", bucketName, objectName);
+            logger.debug("Deleted file from bucket: {}, object: {}", bucketName, objectName);
         } catch (Exception e) {
-            logger.error("Error deleting file from bucket: {}, object: {}", bucketName, objectName, e);
             throw new MinioServiceException("Error deleting file from bucket: " + bucketName + ", object: " + objectName, e);
         }
     }
@@ -122,7 +117,7 @@ public class MinioService {
             // Check if the source and destination buckets are different
             if (sourceBucketName.equals(destinationBucketName)) {
                 // If source and destination buckets are the same, log and return without copying
-                logger.info("Source and destination buckets are the same, skipping copy operation");
+                logger.warn("Source and destination buckets are the same, skipping copy operation");
                 return;
             }
 
@@ -138,7 +133,7 @@ public class MinioService {
                             .build());
 
             // Log successful copy operation
-            logger.info("Copied file from {} in bucket {} to {} in bucket {}", sourceFileName, sourceBucketName, destinationFileName, destinationBucketName);
+            logger.debug("Copied file from {} in bucket {} to {} in bucket {}", sourceFileName, sourceBucketName, destinationFileName, destinationBucketName);
         } catch (MinioException e) {
             // Log and re-throw any Minio-specific exceptions
             logger.error("Error copying file from {} in bucket {} to {} in bucket {}", sourceFileName, sourceBucketName, destinationFileName, destinationBucketName, e);
@@ -146,7 +141,7 @@ public class MinioService {
         } catch (Exception e) {
             // Log and re-throw any other exceptions
             logger.error("Error copying file from {} in bucket {} to {} in bucket {}", sourceFileName, sourceBucketName, destinationFileName, destinationBucketName, e);
-            throw new MinioServiceException("Error copying file", e);
+
         }
     }
 
@@ -155,12 +150,12 @@ public class MinioService {
         try {
             if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
                 minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
-                logger.info("Created bucket: {}", bucketName);
+                logger.debug("Created bucket: {}", bucketName);
             } else {
-                logger.info("Bucket already exists: {}", bucketName);
+                logger.warn("Bucket already exists: {}", bucketName);
             }
         } catch (Exception e) {
-            logger.error("Error creating bucket: {}", bucketName, e);
+
             throw new MinioServiceException("Error creating bucket: " + bucketName, e);
         }
     }
@@ -182,11 +177,11 @@ public class MinioService {
                 minioClient.removeBucket(RemoveBucketArgs.builder().bucket(bucketName).build());
                 logger.info("Deleted bucket: {}", bucketName);
             } else {
-                logger.info("Bucket does not exist: {}", bucketName);
+
                 throw new MinioServiceException("Bucket does not exist: " + bucketName);
             }
         } catch (Exception e) {
-            logger.error("Error deleting bucket: {}", bucketName, e);
+
             throw new MinioServiceException("Error deleting bucket: " + bucketName, e);
         }
     }

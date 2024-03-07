@@ -41,7 +41,6 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
             final ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(response.getOutputStream(), body);
         } catch (IOException e) {
-            logger.error("Failed to write response body", e);
             throw new ServletException("Failed to write response body", e);
         }
     }

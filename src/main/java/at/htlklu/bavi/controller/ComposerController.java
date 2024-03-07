@@ -53,7 +53,7 @@ public class ComposerController {
                 logger.debug("Retrieved {} composers", composers.size());
                 result = new ResponseEntity<>(composers, HttpStatus.OK);
             } else {
-                logger.info("No composers found");
+                logger.warn("No composers found");
                 result = new ResponseEntity<>("No composers found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
@@ -80,7 +80,7 @@ public class ComposerController {
             logger.debug("Retrieved composer: {}", composer);
             result = new ResponseEntity<>(composer, HttpStatus.OK);
         } else {
-            logger.info("Composer not found: {}", composerId);
+            logger.warn("Composer not found: {}", composerId);
             result = new ResponseEntity<>(String.format("Composer not found (%d)", composerId), HttpStatus.NOT_FOUND);
         }
         return result;
@@ -102,7 +102,7 @@ public class ComposerController {
             logger.debug("Retrieved composer: {}", composer);
             result = new ResponseEntity<>(composer.getSongs(), HttpStatus.OK);
         } else {
-            logger.info("Composer not found: {}", composerId);
+            logger.warn("Composer not found: {}", composerId);
             result = new ResponseEntity<>(String.format("Composer not found (%d)", composerId), HttpStatus.NOT_FOUND);
         }
         return result;
@@ -142,7 +142,7 @@ public class ComposerController {
         }
         try {
             Composer savedComposer = composersRepository.save(composer);
-            logger.info("Saved composer: {}", savedComposer);
+            logger.debug("Saved composer: {}", savedComposer);
             return new ResponseEntity<>(savedComposer, HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error saving composer: {}", e.getMessage());
@@ -162,13 +162,13 @@ public class ComposerController {
         logger.info("Deleting composer with ID: {}", composerId);
         Optional<Composer> optionalComposer = composersRepository.findById(composerId);
         if (optionalComposer.isEmpty()) {
-            logger.info("Composer not found: {}", composerId);
+            logger.warn("Composer not found: {}", composerId);
             return new ResponseEntity<>("Composer not found", HttpStatus.NOT_FOUND);
         }
         Composer composer = optionalComposer.get();
         try {
             composersRepository.delete(composer);
-            logger.info("Deleted composer: {}", composer);
+            logger.debug("Deleted composer: {}", composer);
             return new ResponseEntity<>(composer, HttpStatus.OK);
         } catch (Exception e) {
             String errorMessage = ErrorsUtils.getErrorMessage(e);

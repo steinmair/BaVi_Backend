@@ -74,7 +74,7 @@ public class AuthController {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
         // Logging successful authentication
-        logger.info(LogUtils.info(CLASS_NAME, "authenticateUser", String.format("User authenticated successfully (%s)", jwt)));
+        logger.debug(LogUtils.info(CLASS_NAME, "authenticateUser", String.format("User authenticated successfully (%s)", jwt)));
         // Returning JWT response with user details and roles
         return ResponseEntity.ok(new JwtResponse(jwt,
                 userDetails.memberId(),

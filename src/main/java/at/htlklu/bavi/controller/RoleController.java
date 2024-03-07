@@ -53,7 +53,7 @@ public class RoleController {
                 logger.debug("Retrieved {} roles", roles.size());
                 return new ResponseEntity<>(roles, HttpStatus.OK);
             } else {
-                logger.info("No roles found");
+                logger.warn("No roles found");
                 return new ResponseEntity<>("No roles found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
@@ -80,7 +80,7 @@ public class RoleController {
                 logger.debug("Retrieved role: {}", role);
                 return new ResponseEntity<>(role, HttpStatus.OK);
             } else {
-                logger.info("Role not found: {}", roleId);
+                logger.warn("Role not found: {}", roleId);
                 return new ResponseEntity<>(String.format("Role not found(%d)", roleId), HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
@@ -107,7 +107,7 @@ public class RoleController {
                 logger.debug("Retrieved members for role: {}", role);
                 return new ResponseEntity<>(role.getMembers(), HttpStatus.OK);
             } else {
-                logger.info("Role not found: {}", roleId);
+                logger.warn("Role not found: {}", roleId);
                 return new ResponseEntity<>(String.format("Role not found(%d)", roleId), HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
@@ -152,7 +152,7 @@ public class RoleController {
 
         try {
             Role savedRole = roleRepository.save(role);
-            logger.info("Saved role: {}", savedRole);
+            logger.debug("Saved role: {}", savedRole);
             return new ResponseEntity<>(savedRole, HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error saving role: {}", e.getMessage());
@@ -180,7 +180,7 @@ public class RoleController {
                 logger.debug("Deleted role: {}", role);
                 return new ResponseEntity<>(role, HttpStatus.OK);
             } else {
-                logger.info("Role not found: {}", roleId);
+                logger.warn("Role not found: {}", roleId);
                 return new ResponseEntity<>("Role not found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {

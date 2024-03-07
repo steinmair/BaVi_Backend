@@ -55,7 +55,7 @@ public class SongController {
                 logger.debug("Retrieved {} songs", songs.size());
                 return new ResponseEntity<>(songs, HttpStatus.OK);
             } else {
-                logger.info("No songs found");
+                logger.warn("No songs found");
                 return new ResponseEntity<>("No songs found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
@@ -82,7 +82,7 @@ public class SongController {
                 logger.debug("Retrieved song: {}", song);
                 return new ResponseEntity<>(song, HttpStatus.OK);
             } else {
-                logger.info("Song not found: {}", songId);
+                logger.warn("Song not found: {}", songId);
                 return new ResponseEntity<>(String.format("Song not found (%d)", songId), HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
@@ -228,15 +228,15 @@ public class SongController {
 
                 // Delete the associated Minio bucket
                 minioService.deleteBucket(bucketName);
-                logger.info("Bucket '{}' deleted successfully", bucketName);
+                logger.debug("Bucket '{}' deleted successfully", bucketName);
 
                 // Delete the song from the repository
                 songsRepository.delete(song);
-                logger.info("Song with ID '{}' deleted successfully", songId);
+                logger.debug("Song with ID '{}' deleted successfully", songId);
 
                 return new ResponseEntity<>(HttpStatus.OK);
             } else {
-                logger.info("Song with ID '{}' not found", songId);
+                logger.warn("Song with ID '{}' not found", songId);
                 return new ResponseEntity<>("Song not found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {

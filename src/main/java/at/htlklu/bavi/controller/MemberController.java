@@ -68,7 +68,7 @@ public class MemberController {
                 logger.debug("Retrieved {} members", members.size());
                 result = new ResponseEntity<>(members, HttpStatus.OK);
             } else {
-                logger.info("No members found");
+                logger.warn("No members found");
                 result = new ResponseEntity<>("No members found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
@@ -90,7 +90,7 @@ public class MemberController {
         logger.info("Retrieving member with ID: {}", memberId);
         Optional<Member> optionalMember = membersRepository.findById(memberId);
         if (optionalMember.isEmpty()) {
-            logger.info("Member not found: {}", memberId);
+            logger.warn("Member not found: {}", memberId);
             return new ResponseEntity<>(String.format("Member not found (%d)", memberId), HttpStatus.NOT_FOUND);
         }
         Member member = optionalMember.get();
@@ -118,7 +118,7 @@ public class MemberController {
             result = new ResponseEntity<>(member.getSongs(), HttpStatus.OK);
 
         } else {
-            logger.info("Member not found: {}", memberId);
+            logger.warn("Member not found: {}", memberId);
             result = new ResponseEntity<>(String.format("Member not found (%d)", memberId), HttpStatus.NOT_FOUND);
         }
         return result;
@@ -141,7 +141,7 @@ public class MemberController {
             logger.debug("Retrieved member: {}", member);
             result = new ResponseEntity<>(member.getRoles(), HttpStatus.OK);
         } else {
-            logger.info("Member not found: {}", memberId);
+            logger.warn("Member not found: {}", memberId);
             result = new ResponseEntity<>(String.format("Member not found (%d)", memberId), HttpStatus.NOT_FOUND);
         }
         return result;
@@ -164,7 +164,7 @@ public class MemberController {
             logger.debug("Retrieved member: {}", member);
             result = new ResponseEntity<>(member.getInstruments(), HttpStatus.OK);
         } else {
-            logger.info("Member not found: {}", memberId);
+            logger.warn("Member not found: {}", memberId);
             result = new ResponseEntity<>(String.format("Member not found (%d)", memberId), HttpStatus.NOT_FOUND);
         }
         return result;
@@ -206,7 +206,7 @@ public class MemberController {
             String encodedPassword = passwordEncoder.encode(member.getPassword());
             member.setPassword(encodedPassword);
             Member savedMember = membersRepository.save(member);
-            logger.info("Saved member: {}", savedMember);
+            logger.debug("Saved member: {}", savedMember);
             return new ResponseEntity<>(savedMember, HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error saving member: {}", e.getMessage());
@@ -232,12 +232,13 @@ public class MemberController {
         if (optionalMember.isPresent()) {
             member = optionalMember.get();
         } else {
+            logger.warn("Member not found:{}",memberId);
             return new ResponseEntity<>("Member not found", HttpStatus.NOT_FOUND);
         }
 
         try {
             membersRepository.delete(member);
-            logger.info("Deleted member: {}", member);
+            logger.debug("Deleted member: {}", member);
             result = new ResponseEntity<>(member, HttpStatus.OK);
         } catch (Exception e) {
             errorMessage = ErrorsUtils.getErrorMessage(e);

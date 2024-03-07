@@ -40,7 +40,7 @@ public class MinioController {
 
         try {
             minioService.uploadFile(archivNumber, file.getOriginalFilename(), file.getInputStream(), file.getContentType());
-            logger.info("File uploaded successfully: {}", file.getOriginalFilename());
+            logger.debug("File uploaded successfully: {}", file.getOriginalFilename());
             return ResponseEntity.ok().body("File uploaded successfully");
         } catch (IOException e) {
             logger.error("Failed to upload file: {}", e.getMessage());
@@ -58,7 +58,7 @@ public class MinioController {
 
         try {
             ByteArrayResource resource = minioService.downloadFile(archivNumber, file);
-            logger.info("File downloaded successfully: {}", file);
+            logger.debug("File downloaded successfully: {}", file);
             return ResponseEntity.ok()
                     .contentLength(resource.contentLength())
                     .header("Content-Disposition", "attachment; filename=\"" + file + "\"")
@@ -79,7 +79,7 @@ public class MinioController {
 
         try {
             List<String> objectNames = minioService.listFiles(archivNumber);
-            logger.info("List of files retrieved successfully for archive: {}", archivNumber);
+            logger.debug("List of files retrieved successfully for archive: {}", archivNumber);
             return ResponseEntity.ok().body(objectNames);
         } catch (MinioServiceException e) {
             logger.error("Failed to list files for archive {}: {}", archivNumber, e.getMessage());
@@ -98,7 +98,7 @@ public class MinioController {
 
         try {
             minioService.deleteFile(archivNumber, file);
-            logger.info("File {} deleted successfully from archive {}", file, archivNumber);
+            logger.debug("File {} deleted successfully from archive {}", file, archivNumber);
             return ResponseEntity.ok().body("File " + file + " deleted successfully");
         } catch (Exception e) {
             logger.error("Failed to delete file {} from archive {}: {}", file, archivNumber, e.getMessage());
@@ -116,7 +116,7 @@ public class MinioController {
 
         try {
             minioService.createBucket(archivNumber);
-            logger.info("Bucket created successfully: {}", archivNumber);
+            logger.debug("Bucket created successfully: {}", archivNumber);
             return ResponseEntity.ok().body("Bucket created successfully");
         } catch (MinioBucketExistsException e) {
             logger.warn("Bucket {} already exists", archivNumber);
@@ -137,7 +137,7 @@ public class MinioController {
 
         try {
             minioService.deleteBucket(archivNumber);
-            logger.info("Bucket deleted successfully: {}", archivNumber);
+            logger.debug("Bucket deleted successfully: {}", archivNumber);
             return ResponseEntity.ok().body("Bucket deleted successfully");
         } catch (MinioBucketExistsException e) {
             logger.warn("Bucket {} does not exist", archivNumber);

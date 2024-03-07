@@ -53,7 +53,7 @@ public class GenreController {
                 logger.debug("Retrieved {} genres", genres.size());
                 result = new ResponseEntity<>(genres, HttpStatus.OK);
             } else {
-                logger.info("No genres found");
+                logger.warn("No genres found");
                 result = new ResponseEntity<>("No genres found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
@@ -81,7 +81,7 @@ public class GenreController {
             logger.debug("Retrieved genre: {}", genre);
             result = new ResponseEntity<>(genre, HttpStatus.OK);
         } else {
-            logger.info("Genre not found: {}", genreId);
+            logger.warn("Genre not found: {}", genreId);
             result = new ResponseEntity<>(String.format("Genre not found (%d)", genreId), HttpStatus.NOT_FOUND);
         }
         return result;
@@ -103,7 +103,7 @@ public class GenreController {
             logger.debug("Retrieved genre: {}", genre);
             result = new ResponseEntity<>(genre.getSongs(), HttpStatus.OK);
         } else {
-            logger.info("Genre not found: {}", genreId);
+            logger.warn("Genre not found: {}", genreId);
             result = new ResponseEntity<>(String.format("Genre not found (%d)", genreId), HttpStatus.NOT_FOUND);
         }
         return result;
@@ -143,7 +143,7 @@ public class GenreController {
         }
         try {
             Genre savedGenre = genresRepository.save(genre);
-            logger.info("Saved genre: {}", savedGenre);
+            logger.debug("Saved genre: {}", savedGenre);
             return new ResponseEntity<>(savedGenre, HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error saving genre: {}", e.getMessage());
@@ -163,13 +163,13 @@ public class GenreController {
         logger.info("Deleting genre with ID: {}", genreId);
         Optional<Genre> optionalGenre = genresRepository.findById(genreId);
         if (optionalGenre.isEmpty()) {
-            logger.info("Genre not found: {}", genreId);
+            logger.warn("Genre not found: {}", genreId);
             return new ResponseEntity<>("Genre not found", HttpStatus.NOT_FOUND);
         }
         Genre genre = optionalGenre.get();
         try {
             genresRepository.delete(genre);
-            logger.info("Deleted genre: {}", genre);
+            logger.debug("Deleted genre: {}", genre);
             return new ResponseEntity<>(genre, HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error deleting genre: {}", e.getMessage());

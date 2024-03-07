@@ -54,7 +54,7 @@ public class PublisherController {
                 logger.debug("Retrieved {} publishers", publishers.size());
                 return ResponseEntity.ok().body(publishers);
             } else {
-                logger.info("No publishers found");
+                logger.warn("No publishers found");
                 return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
@@ -81,7 +81,7 @@ public class PublisherController {
                 logger.debug("Retrieved publisher: {}", publisher);
                 return ResponseEntity.ok().body(publisher);
             } else {
-                logger.info("Publisher not found: {}", publisherId);
+                logger.warn("Publisher not found: {}", publisherId);
                 return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
@@ -108,7 +108,7 @@ public class PublisherController {
                 logger.debug("Retrieved songs for publisher: {}", publisher);
                 return ResponseEntity.ok().body(publisher.getSongs());
             } else {
-                logger.info("Publisher not found: {}", publisherId);
+                logger.warn("Publisher not found: {}", publisherId);
                 return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
@@ -152,7 +152,7 @@ public class PublisherController {
 
         try {
             Publisher savedPublisher = publishersRepository.save(publisher);
-            logger.info("Saved publisher: {}", savedPublisher);
+            logger.debug("Saved publisher: {}", savedPublisher);
             return new ResponseEntity<>(savedPublisher, HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error saving publisher: {}", e.getMessage());
@@ -178,10 +178,10 @@ public class PublisherController {
             if (optionalPublisher.isPresent()) {
                 Publisher publisher = optionalPublisher.get();
                 publishersRepository.delete(publisher);
-                logger.info("Deleted publisher: {}", publisher);
+                logger.debug("Deleted publisher: {}", publisher);
                 result = new ResponseEntity<>(publisher, HttpStatus.OK);
             } else {
-                logger.info("Publisher not found: {}", publisherId);
+                logger.warn("Publisher not found: {}", publisherId);
                 result = new ResponseEntity<>("Publisher not found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {

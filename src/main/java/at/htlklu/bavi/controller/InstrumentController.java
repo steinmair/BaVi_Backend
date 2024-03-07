@@ -54,7 +54,7 @@ public class InstrumentController {
                 logger.debug("Retrieved {} instruments", instruments.size());
                 result = new ResponseEntity<>(instruments, HttpStatus.OK);
             } else {
-                logger.info("No instruments found");
+                logger.warn("No instruments found");
                 result = new ResponseEntity<>("No instruments found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
@@ -82,7 +82,7 @@ public class InstrumentController {
             logger.debug("Retrieved instrument: {}", instrument);
             result = new ResponseEntity<>(instrument, HttpStatus.OK);
         } else {
-            logger.info("Instrument not found: {}", instrumentId);
+            logger.warn("Instrument not found: {}", instrumentId);
             result = new ResponseEntity<>(String.format("Instrument not found(%d)", instrumentId), HttpStatus.NOT_FOUND);
         }
         return result;
@@ -104,7 +104,7 @@ public class InstrumentController {
             logger.debug("Retrieved instrument: {}", instrument);
             result = new ResponseEntity<>(instrument.getMembers(), HttpStatus.OK);
         } else {
-            logger.info("Instrument not found: {}", instrumentId);
+            logger.warn("Instrument not found: {}", instrumentId);
             result = new ResponseEntity<>(String.format("Instrument not found (%d)", instrumentId), HttpStatus.NOT_FOUND);
         }
         return result;
@@ -144,7 +144,7 @@ public class InstrumentController {
         }
         try {
             Instrument savedInstrument = instrumentsRepository.save(instrument);
-            logger.info("Saved instrument: {}", savedInstrument);
+            logger.debug("Saved instrument: {}", savedInstrument);
             return new ResponseEntity<>(savedInstrument, HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error saving instrument: {}", e.getMessage());
@@ -165,13 +165,13 @@ public class InstrumentController {
         logger.info("Deleting instrument with ID: {}", instrumentId);
         Optional<Instrument> optionalInstrument = instrumentsRepository.findById(instrumentId);
         if (optionalInstrument.isEmpty()) {
-            logger.info("Instrument not found: {}", instrumentId);
+            logger.warn("Instrument not found: {}", instrumentId);
             return new ResponseEntity<>("Instrument not found", HttpStatus.NOT_FOUND);
         }
         Instrument instrument = optionalInstrument.get();
         try {
             instrumentsRepository.delete(instrument);
-            logger.info("Deleted instrument: {}", instrument);
+            logger.debug("Deleted instrument: {}", instrument);
             return new ResponseEntity<>(instrument, HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error deleting instrument: {}", e.getMessage());
