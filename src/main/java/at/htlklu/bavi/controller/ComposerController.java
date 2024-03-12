@@ -26,6 +26,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("composers")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class ComposerController {
 
     private static final Logger logger = LogManager.getLogger(ComposerController.class);

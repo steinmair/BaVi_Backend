@@ -26,6 +26,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("instruments")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class InstrumentController {
 
     private static final Logger logger = LogManager.getLogger(InstrumentController.class);

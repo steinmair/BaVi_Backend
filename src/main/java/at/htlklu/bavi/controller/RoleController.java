@@ -25,6 +25,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("roles")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class RoleController {
 
     private static final Logger logger = LogManager.getLogger(RoleController.class);

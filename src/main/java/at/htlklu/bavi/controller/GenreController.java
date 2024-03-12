@@ -26,6 +26,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("genres")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class GenreController {
 
     private static final Logger logger = LogManager.getLogger(GenreController.class);

@@ -26,6 +26,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("publishers")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class PublisherController {
 
     private static final Logger logger = LogManager.getLogger(PublisherController.class);

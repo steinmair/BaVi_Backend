@@ -32,6 +32,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("members")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class MemberController {
 
     private static final Logger logger = LogManager.getLogger(MemberController.class);

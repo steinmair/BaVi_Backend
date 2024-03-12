@@ -26,6 +26,9 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("songs")
+//@CrossOrigin({"Authorization","Content-Type"})
+//@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class SongController {
 
     private static final Logger logger = LogManager.getLogger(SongController.class);
