@@ -20,13 +20,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Optional;
 
 
 @RestController
 @RequestMapping("instruments")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class InstrumentController {
 
     private static final Logger logger = LogManager.getLogger(InstrumentController.class);
@@ -47,18 +47,19 @@ public class InstrumentController {
     @ApiResponse(responseCode = "404", description = "No instruments found")
     @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> getAllInstruments() {
-        logger.info(LogUtils.info(CLASS_NAME, "getAllInstruments", "Retrieving all instruments"));
-
+        logger.info("Retrieving all instruments");
         ResponseEntity<?> result;
         try {
             List<Instrument> instruments = instrumentsRepository.findAll();
             if (!instruments.isEmpty()) {
+                logger.debug("Retrieved {} instruments", instruments.size());
                 result = new ResponseEntity<>(instruments, HttpStatus.OK);
             } else {
+                logger.warn("No instruments found");
                 result = new ResponseEntity<>("No instruments found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error retrieving instruments: {}", e.getMessage());
             String errorMessage = ErrorsUtils.getErrorMessage(e);
             result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -73,16 +74,17 @@ public class InstrumentController {
             content = @Content(schema = @Schema(implementation = Instrument.class)))
     @ApiResponse(responseCode = "404", description = "Instrument not found")
     public ResponseEntity<?> getById(@PathVariable Integer instrumentId) {
-        logger.info(LogUtils.info(CLASS_NAME, "getById", String.format("(%d)", instrumentId)));
+        logger.info("Retrieving instrument with ID: {}", instrumentId);
 
         ResponseEntity<?> result;
         Optional<Instrument> optionalInstrument = instrumentsRepository.findById(instrumentId);
         if (optionalInstrument.isPresent()) {
-
             Instrument instrument = optionalInstrument.get();
+            logger.debug("Retrieved instrument: {}", instrument);
             result = new ResponseEntity<>(instrument, HttpStatus.OK);
         } else {
-            result = new ResponseEntity<>(String.format("Instrument mit der Id = %d nicht vorhanden", instrumentId), HttpStatus.NOT_FOUND);
+            logger.warn("Instrument not found: {}", instrumentId);
+            result = new ResponseEntity<>(String.format("Instrument not found(%d)", instrumentId), HttpStatus.NOT_FOUND);
         }
         return result;
     }
@@ -95,21 +97,20 @@ public class InstrumentController {
             content = @Content(schema = @Schema(implementation = Member.class)))
     @ApiResponse(responseCode = "404", description = "Instrument not found")
     public ResponseEntity<?> getMembersByInstrumentsId(@PathVariable Integer instrumentId) {
-
-        logger.info(LogUtils.info(CLASS_NAME, "getMembersByInstrumentsId", String.format("(%d)", instrumentId)));
-
+        logger.info("Retrieving members for instrument with ID: {}", instrumentId);
         ResponseEntity<?> result;
         Optional<Instrument> optionalInstrument = instrumentsRepository.findById(instrumentId);
         if (optionalInstrument.isPresent()) {
-
             Instrument instrument = optionalInstrument.get();
+            logger.debug("Retrieved instrument: {}", instrument);
             result = new ResponseEntity<>(instrument.getMembers(), HttpStatus.OK);
         } else {
-            result = new ResponseEntity<>(String.format("Instrument mit der Id = %d nicht vorhanden", instrumentId), HttpStatus.NOT_FOUND);
+            logger.warn("Instrument not found: {}", instrumentId);
+            result = new ResponseEntity<>(String.format("Instrument not found (%d)", instrumentId), HttpStatus.NOT_FOUND);
         }
         return result;
-
     }
+
     // einfügen einer neuen Ressource
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("")
@@ -139,14 +140,15 @@ public class InstrumentController {
     @NotNull
     private ResponseEntity<?> getResponseEntity(@RequestBody @Valid Instrument instrument, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
+            logger.error("Validation errors occurred: {}", bindingResult.getAllErrors());
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-
         try {
             Instrument savedInstrument = instrumentsRepository.save(instrument);
+            logger.debug("Saved instrument: {}", savedInstrument);
             return new ResponseEntity<>(savedInstrument, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace(); // Consider logging the exception
+            logger.error("Error saving instrument: {}", e.getMessage());
             String errorMessage = e.getCause().getCause().getLocalizedMessage();
             return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -161,27 +163,22 @@ public class InstrumentController {
     @ApiResponse(responseCode = "404", description = "Instrument not found")
     @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> deleteInstrument(@PathVariable Integer instrumentId) {
-        logger.info(LogUtils.info(CLASS_NAME, "deleteInstrument", String.format("(%d)", instrumentId)));
-        String errorMessage;
-        ResponseEntity<?> result;
-        Instrument instrument;
-
+        logger.info("Deleting instrument with ID: {}", instrumentId);
         Optional<Instrument> optionalInstrument = instrumentsRepository.findById(instrumentId);
-        if (optionalInstrument.isPresent()) {
-            instrument = optionalInstrument.get();
-        } else {
+        if (optionalInstrument.isEmpty()) {
+            logger.warn("Instrument not found: {}", instrumentId);
             return new ResponseEntity<>("Instrument not found", HttpStatus.NOT_FOUND);
         }
-
+        Instrument instrument = optionalInstrument.get();
         try {
             instrumentsRepository.delete(instrument);
-            result = new ResponseEntity<>(instrument, HttpStatus.OK);
+            logger.debug("Deleted instrument: {}", instrument);
+            return new ResponseEntity<>(instrument, HttpStatus.OK);
         } catch (Exception e) {
-            errorMessage = ErrorsUtils.getErrorMessage(e);
-            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Error deleting instrument: {}", e.getMessage());
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return result;
     }
 
 

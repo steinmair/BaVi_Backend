@@ -47,21 +47,21 @@ public class Song extends RepresentationModel<Song> implements Serializable {
     private String archivNumber;
 
 
-    @JsonIgnore
+    //@JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PUBLISHER_ID")
     private Publisher publisher;
 
-    @JsonIgnore
+   // @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "GENRE_ID")
     private Genre genre;
 
-    @JsonIgnore
+   // @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "COMPOSER_ID")
     private Composer composer;
-    @JsonIgnore
+   // @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MEMBER_ID")
     private Member member;

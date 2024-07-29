@@ -100,4 +100,12 @@ public class UserDetailsImpl implements UserDetails {
         UserDetailsImpl member = (UserDetailsImpl) o;
         return Objects.equals(memberId, member.memberId);
     }
+
+    public Integer getMemberId() {
+        return memberId;
+    }
+
+    public String geteMail() {
+        return eMail;
+    }
 }

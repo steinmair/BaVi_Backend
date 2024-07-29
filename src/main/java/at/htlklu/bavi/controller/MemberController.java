@@ -26,14 +26,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-
 import java.util.List;
 import java.util.Optional;
 
 
 @RestController
 @RequestMapping("members")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class MemberController {
 
     private static final Logger logger = LogManager.getLogger(MemberController.class);
@@ -62,18 +61,19 @@ public class MemberController {
     @ApiResponse(responseCode = "404", description = "No members found")
     @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> getAllMembers() {
-        logger.info(LogUtils.info(CLASS_NAME, "getAllMembers", "Retrieving all members"));
-
+        logger.info("Retrieving all members");
         ResponseEntity<?> result;
         try {
             List<Member> members = membersRepository.findAll();
             if (!members.isEmpty()) {
+                logger.debug("Retrieved {} members", members.size());
                 result = new ResponseEntity<>(members, HttpStatus.OK);
             } else {
+                logger.warn("No members found");
                 result = new ResponseEntity<>("No members found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error retrieving members: {}", e.getMessage());
             String errorMessage = ErrorsUtils.getErrorMessage(e);
             result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -88,18 +88,15 @@ public class MemberController {
             content = @Content(schema = @Schema(implementation = Member.class)))
     @ApiResponse(responseCode = "404", description = "Member not found")
     public ResponseEntity<?> getById(@PathVariable Integer memberId) {
-        logger.info(LogUtils.info(CLASS_NAME, "getById", String.format("(%d)", memberId)));
-
-        ResponseEntity<?> result;
+        logger.info("Retrieving member with ID: {}", memberId);
         Optional<Member> optionalMember = membersRepository.findById(memberId);
-        if (optionalMember.isPresent()) {
-
-            Member member = optionalMember.get();
-            result = new ResponseEntity<>(member, HttpStatus.OK);
-        } else {
-            result = new ResponseEntity<>(String.format("Member mit der Id = %d nicht vorhanden", memberId), HttpStatus.NOT_FOUND);
+        if (optionalMember.isEmpty()) {
+            logger.warn("Member not found: {}", memberId);
+            return new ResponseEntity<>(String.format("Member not found (%d)", memberId), HttpStatus.NOT_FOUND);
         }
-        return result;
+        Member member = optionalMember.get();
+        logger.debug("Retrieved member: {}", member);
+        return new ResponseEntity<>(member, HttpStatus.OK);
     }
 
     //http://localhost:8082/members/id/songs
@@ -118,9 +115,12 @@ public class MemberController {
         if (optionalMember.isPresent()) {
 
             Member member = optionalMember.get();
+            logger.debug("Retrieved member: {}", member);
             result = new ResponseEntity<>(member.getSongs(), HttpStatus.OK);
+
         } else {
-            result = new ResponseEntity<>(String.format("Member mit der Id = %d nicht vorhanden", memberId), HttpStatus.NOT_FOUND);
+            logger.warn("Member not found: {}", memberId);
+            result = new ResponseEntity<>(String.format("Member not found (%d)", memberId), HttpStatus.NOT_FOUND);
         }
         return result;
 
@@ -134,17 +134,16 @@ public class MemberController {
             content = @Content(schema = @Schema(implementation = Role.class)))
     @ApiResponse(responseCode = "404", description = "Member not found")
     public ResponseEntity<?> getRolesById(@PathVariable Integer memberId) {
-
         logger.info(LogUtils.info(CLASS_NAME, "getRolesById", String.format("(%d)", memberId)));
-
         ResponseEntity<?> result;
         Optional<Member> optionalMember = membersRepository.findById(memberId);
         if (optionalMember.isPresent()) {
-
             Member member = optionalMember.get();
+            logger.debug("Retrieved member: {}", member);
             result = new ResponseEntity<>(member.getRoles(), HttpStatus.OK);
         } else {
-            result = new ResponseEntity<>(String.format("Member mit der Id = %d nicht vorhanden", memberId), HttpStatus.NOT_FOUND);
+            logger.warn("Member not found: {}", memberId);
+            result = new ResponseEntity<>(String.format("Member not found (%d)", memberId), HttpStatus.NOT_FOUND);
         }
         return result;
 
@@ -158,17 +157,16 @@ public class MemberController {
             content = @Content(schema = @Schema(implementation = Instrument.class)))
     @ApiResponse(responseCode = "404", description = "Member not found")
     public ResponseEntity<?> getInstrumentsById(@PathVariable Integer memberId) {
-
         logger.info(LogUtils.info(CLASS_NAME, "getInstrumentsById", String.format("(%d)", memberId)));
-
         ResponseEntity<?> result;
         Optional<Member> optionalMember = membersRepository.findById(memberId);
         if (optionalMember.isPresent()) {
-
             Member member = optionalMember.get();
+            logger.debug("Retrieved member: {}", member);
             result = new ResponseEntity<>(member.getInstruments(), HttpStatus.OK);
         } else {
-            result = new ResponseEntity<>(String.format("Member mit der Id = %d nicht vorhanden", memberId), HttpStatus.NOT_FOUND);
+            logger.warn("Member not found: {}", memberId);
+            result = new ResponseEntity<>(String.format("Member not found (%d)", memberId), HttpStatus.NOT_FOUND);
         }
         return result;
 
@@ -205,15 +203,14 @@ public class MemberController {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-
         try {
-
             String encodedPassword = passwordEncoder.encode(member.getPassword());
             member.setPassword(encodedPassword);
             Member savedMember = membersRepository.save(member);
+            logger.debug("Saved member: {}", savedMember);
             return new ResponseEntity<>(savedMember, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace(); // Consider logging the exception
+            logger.error("Error saving member: {}", e.getMessage());
             String errorMessage = e.getCause().getCause().getLocalizedMessage();
             return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -236,14 +233,17 @@ public class MemberController {
         if (optionalMember.isPresent()) {
             member = optionalMember.get();
         } else {
+            logger.warn("Member not found:{}",memberId);
             return new ResponseEntity<>("Member not found", HttpStatus.NOT_FOUND);
         }
 
         try {
             membersRepository.delete(member);
+            logger.debug("Deleted member: {}", member);
             result = new ResponseEntity<>(member, HttpStatus.OK);
         } catch (Exception e) {
             errorMessage = ErrorsUtils.getErrorMessage(e);
+            logger.error("Error deleting member: {}", e.getMessage());
             result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 

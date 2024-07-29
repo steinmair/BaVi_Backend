@@ -20,13 +20,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("roles")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class RoleController {
 
     private static final Logger logger = LogManager.getLogger(RoleController.class);
@@ -49,20 +48,20 @@ public class RoleController {
     public ResponseEntity<?> getAllRoles() {
         logger.info(LogUtils.info(CLASS_NAME, "getAllRoles", "Retrieving all roles"));
 
-        ResponseEntity<?> result;
         try {
             List<Role> roles = roleRepository.findAll();
             if (!roles.isEmpty()) {
-                result = new ResponseEntity<>(roles, HttpStatus.OK);
+                logger.debug("Retrieved {} roles", roles.size());
+                return new ResponseEntity<>(roles, HttpStatus.OK);
             } else {
-                result = new ResponseEntity<>("No roles found", HttpStatus.NOT_FOUND);
+                logger.warn("No roles found");
+                return new ResponseEntity<>("No roles found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error retrieving roles: {}", e.getMessage());
             String errorMessage = ErrorsUtils.getErrorMessage(e);
-            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return result;
     }
 
     //http://localhost:8082/functions/id
@@ -75,16 +74,21 @@ public class RoleController {
     public ResponseEntity<?> getRoleById(@PathVariable Integer roleId) {
         logger.info(LogUtils.info(CLASS_NAME, "getRoleById", String.format("(%d)", roleId)));
 
-        ResponseEntity<?> result;
-        Optional<Role> optionalRole = roleRepository.findById(roleId);
-        if (optionalRole.isPresent()) {
-
-            Role role = optionalRole.get();
-            result = new ResponseEntity<>(role, HttpStatus.OK);
-        } else {
-            result = new ResponseEntity<>(String.format("Role mit der Id = %d nicht vorhanden", roleId), HttpStatus.NOT_FOUND);
+        try {
+            Optional<Role> optionalRole = roleRepository.findById(roleId);
+            if (optionalRole.isPresent()) {
+                Role role = optionalRole.get();
+                logger.debug("Retrieved role: {}", role);
+                return new ResponseEntity<>(role, HttpStatus.OK);
+            } else {
+                logger.warn("Role not found: {}", roleId);
+                return new ResponseEntity<>(String.format("Role not found(%d)", roleId), HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            logger.error("Error retrieving role {}: {}", roleId, e.getMessage());
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return result;
     }
 
     //http://localhost:8082/functions/id/members
@@ -95,20 +99,23 @@ public class RoleController {
             content = @Content(schema = @Schema(implementation = Member.class)))
     @ApiResponse(responseCode = "404", description = "Role not found")
     public ResponseEntity<?> getMembersByRoleId(@PathVariable Integer roleId) {
-
         logger.info(LogUtils.info(CLASS_NAME, "getMembersByRoleId", String.format("(%d)", roleId)));
 
-        ResponseEntity<?> result;
-        Optional<Role> optionalRole = roleRepository.findById(roleId);
-        if (optionalRole.isPresent()) {
-
-            Role role = optionalRole.get();
-            result = new ResponseEntity<>(role.getMembers(), HttpStatus.OK);
-        } else {
-            result = new ResponseEntity<>(String.format("Function mit der Id = %d nicht vorhanden", roleId), HttpStatus.NOT_FOUND);
+        try {
+            Optional<Role> optionalRole = roleRepository.findById(roleId);
+            if (optionalRole.isPresent()) {
+                Role role = optionalRole.get();
+                logger.debug("Retrieved members for role: {}", role);
+                return new ResponseEntity<>(role.getMembers(), HttpStatus.OK);
+            } else {
+                logger.warn("Role not found: {}", roleId);
+                return new ResponseEntity<>(String.format("Role not found(%d)", roleId), HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            logger.error("Error retrieving members for role {}: {}", roleId, e.getMessage());
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return result;
-
     }
 
     // einfügen einer neuen Ressource
@@ -140,14 +147,16 @@ public class RoleController {
     @NotNull
     private ResponseEntity<?> getResponseEntity(@RequestBody @Valid Role role, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
+            logger.error("Validation errors occurred for role: {}", bindingResult.getAllErrors());
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
 
         try {
             Role savedRole = roleRepository.save(role);
+            logger.debug("Saved role: {}", savedRole);
             return new ResponseEntity<>(savedRole, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace(); // Consider logging the exception
+            logger.error("Error saving role: {}", e.getMessage());
             String errorMessage = e.getCause().getCause().getLocalizedMessage();
             return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -161,28 +170,25 @@ public class RoleController {
     @ApiResponse(responseCode = "200", description = "Role deleted successfully")
     @ApiResponse(responseCode = "404", description = "Role not found")
     @ApiResponse(responseCode = "500", description = "Internal server error")
-    public ResponseEntity<?> deleteFunction(@PathVariable Integer roleId) {
+    public ResponseEntity<?> deleteRole(@PathVariable Integer roleId) {
         logger.info(LogUtils.info(CLASS_NAME, "deleteRole", String.format("(%d)", roleId)));
-        String errorMessage;
-        ResponseEntity<?> result;
-        Role role;
-
-        Optional<Role> optionalRole = roleRepository.findById(roleId);
-        if (optionalRole.isPresent()) {
-            role = optionalRole.get();
-        } else {
-            return new ResponseEntity<>("Role not found", HttpStatus.NOT_FOUND);
-        }
 
         try {
-            roleRepository.delete(role);
-            result = new ResponseEntity<>(role, HttpStatus.OK);
+            Optional<Role> optionalRole = roleRepository.findById(roleId);
+            if (optionalRole.isPresent()) {
+                Role role = optionalRole.get();
+                roleRepository.delete(role);
+                logger.debug("Deleted role: {}", role);
+                return new ResponseEntity<>(role, HttpStatus.OK);
+            } else {
+                logger.warn("Role not found: {}", roleId);
+                return new ResponseEntity<>("Role not found", HttpStatus.NOT_FOUND);
+            }
         } catch (Exception e) {
-            errorMessage = ErrorsUtils.getErrorMessage(e);
-            result = new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Error deleting role {}: {}", roleId, e.getMessage());
+            String errorMessage = ErrorsUtils.getErrorMessage(e);
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return result;
     }
 
 
