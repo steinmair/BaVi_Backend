@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -58,10 +59,12 @@ public class MinioController {
         logger.info(LogUtils.info(CLASS_NAME, "downloadFile", String.format("(%s, %s)", archivNumber, file)));
 
         try {
-            ByteArrayResource resource = minioService.downloadFile(archivNumber, file);
             logger.debug("File downloaded successfully: {}", file);
+            ByteArrayResource resource = minioService.downloadFile(archivNumber, file);
+
             return ResponseEntity.ok()
                     .contentLength(resource.contentLength())
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .header("Content-Disposition", "attachment; filename=\"" + file + "\"")
                     .body(resource);
         } catch (Exception e) {
